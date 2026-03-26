@@ -246,7 +246,9 @@ export default function QuizPage() {
                 const next = usedGenerations + 1;
                 localStorage.setItem(LS_KEY, String(next));
                 setUsedGenerations(next);
-              } catch {
+              } catch (parseErr) {
+                console.error("[quiz] JSON parse failed. Raw fullText:", fullText);
+                console.error("[quiz] parse error:", parseErr);
                 setServerError(
                   "Не удалось разобрать ответ модели. Попробуйте ещё раз."
                 );
