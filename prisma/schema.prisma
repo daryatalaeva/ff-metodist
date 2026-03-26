@@ -1,0 +1,37 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Generation {
+  id                String   @id @default(uuid())
+  userId            String?
+  featureType       String
+  subject           String?
+  grade             Int?
+  topic             String?
+  examFormat        String?
+  questionTypes     String[]
+  questionCount     Int?
+  textbookName      String?
+  textbookFileUrl   String?
+  extraInstructions String?
+  promptTokens      Int?
+  completionTokens  Int?
+  resultJson        Json?
+  resultText        String?
+  feedback          String?
+  wasCopied         Boolean  @default(false)
+  wasDownloaded     Boolean  @default(false)
+  wasRegenerated    Boolean  @default(false)
+  createdAt         DateTime @default(now())
+}
+
+model SubscriptionRequest {
+  id        String   @id @default(uuid())
+  email     String
+  createdAt DateTime @default(now())
+}

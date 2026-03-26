@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F3F4F6;
+  --foreground: #111111;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+/* ─── Shared form element base ─── */
+.fox-input {
+  height: 42px;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
+  background: white;
+  color: #111;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.fox-input:focus {
+  outline: none;
+  border-color: #F96B1B;
+}
+
+.fox-input::placeholder {
+  color: #bbb;
+}
+
+.fox-textarea {
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
+  background: white;
+  color: #111;
+  resize: vertical;
+  line-height: 1.55;
+  transition: border-color 0.15s;
+}
+
+.fox-textarea:focus {
+  outline: none;
+  border-color: #F96B1B;
+}
+
+.fox-textarea::placeholder {
+  color: #bbb;
+}
+
+/* Select arrow */
+.fox-select-wrap {
+  position: relative;
+}
+
+.fox-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #888;
+  pointer-events: none;
+}
+
+.fox-select-wrap select {
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.fox-select-wrap select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Streaming pre */
+.stream-pre {
+  background: #F3F4F6;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow: auto;
+  max-height: 420px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: "Courier New", monospace;
+  color: #333;
+  margin: 0;
+}
