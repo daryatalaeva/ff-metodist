@@ -240,12 +240,22 @@ export default function QuizPage() {
             if (data.done && data.generationId) {
               setGenerationId(data.generationId);
               try {
-                setResult(extractJson(fullText) as QuizResult);
-                setMode("result");
-                // Increment localStorage counter on successful generation
-                const next = usedGenerations + 1;
-                localStorage.setItem(LS_KEY, String(next));
-                setUsedGenerations(next);
+                const parsed = extractJson(fullText) as Record<string, unknown>;
+                // Model signalled that the topic is outside the school curriculum
+                if (parsed.error === "topic_invalid") {
+                  const msg = typeof parsed.message === "string"
+                    ? parsed.message
+                    : "По этой теме пока недостаточно данных для генерации материалов.";
+                  setServerError(msg);
+                  setMode("form");
+                } else {
+                  setResult(parsed as unknown as QuizResult);
+                  setMode("result");
+                  // Increment localStorage counter on successful generation
+                  const next = usedGenerations + 1;
+                  localStorage.setItem(LS_KEY, String(next));
+                  setUsedGenerations(next);
+                }
               } catch (parseErr) {
                 console.error("[quiz] JSON parse failed. Raw fullText:", fullText);
                 console.error("[quiz] parse error:", parseErr);
