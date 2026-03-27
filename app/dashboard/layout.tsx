@@ -19,6 +19,7 @@ export default function DashboardLayout({
   const isTools =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/quiz");
 
+
   return (
     <div style={{ minHeight: "100vh", background: "#F7F7FC" }}>
       <Header />
