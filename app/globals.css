@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #F3F4F6;
+  --background: #F5F5F7;
   --foreground: #111111;
 }
 
@@ -14,18 +14,21 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Circe — основной шрифт Фоксфорда; Nunito — fallback */
+  font-family: 'Circe', var(--font-nunito), -apple-system, BlinkMacSystemFont, sans-serif;
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ─── Shared form element base ─── */
 .fox-input {
-  height: 42px;
-  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  height: 44px;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
   border-radius: 10px;
   padding: 0 14px;
-  font-size: 14px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  font-family: inherit;
   width: 100%;
   background: white;
   color: #111;
@@ -40,15 +43,15 @@ body {
 }
 
 .fox-input::placeholder {
-  color: #bbb;
+  color: #C0C0C0;
 }
 
 .fox-textarea {
-  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
   border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-family: Arial, Helvetica, sans-serif;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-family: inherit;
   width: 100%;
   background: white;
   color: #111;
@@ -63,7 +66,7 @@ body {
 }
 
 .fox-textarea::placeholder {
-  color: #bbb;
+  color: #C0C0C0;
 }
 
 /* Select arrow */
@@ -81,7 +84,7 @@ body {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #888;
+  border-top: 5px solid #999;
   pointer-events: none;
 }
 
@@ -97,10 +100,10 @@ body {
 
 /* Streaming pre */
 .stream-pre {
-  background: #F3F4F6;
+  background: #F5F5F7;
   border-radius: 10px;
   padding: 16px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
   overflow: auto;
   max-height: 420px;
@@ -109,4 +112,15 @@ body {
   font-family: "Courier New", monospace;
   color: #333;
   margin: 0;
+}
+
+/* ─── Tool card hover animation ─── */
+.fox-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.fox-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.11);
 }

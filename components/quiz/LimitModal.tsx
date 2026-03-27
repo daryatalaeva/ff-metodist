@@ -60,7 +60,7 @@ export default function LimitModal({ onClose }: Props) {
           padding: "36px 32px",
           maxWidth: 440,
           width: "100%",
-          fontFamily: "Arial, Helvetica, sans-serif",
+          fontFamily: "inherit",
           boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
           position: "relative",
         }}

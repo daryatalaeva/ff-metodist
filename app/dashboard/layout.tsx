@@ -23,8 +23,7 @@ export default function DashboardLayout({
     <div
       style={{
         minHeight: "100vh",
-        background: "#F3F4F6",
-        fontFamily: "Arial, Helvetica, sans-serif",
+        background: "#F5F5F7",
       }}
     >
       <Header />

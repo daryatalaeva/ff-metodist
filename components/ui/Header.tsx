@@ -2,9 +2,9 @@ export default function Header() {
   return (
     <header
       style={{
-        height: 58,
+        height: 60,
         background: "white",
-        borderBottom: "1px solid rgba(0,0,0,0.08)",
+        borderBottom: "1px solid rgba(0,0,0,0.07)",
         padding: "0 32px",
         display: "flex",
         alignItems: "center",
@@ -12,43 +12,42 @@ export default function Header() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        fontFamily: "Arial, Helvetica, sans-serif",
       }}
     >
       {/* Left */}
-      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <button
           style={{
-            background: "#000",
+            background: "#111",
             color: "white",
             border: "none",
             borderRadius: 20,
-            padding: "6px 18px",
+            padding: "7px 18px",
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 700,
             cursor: "pointer",
             fontFamily: "inherit",
-            letterSpacing: "0.01em",
+            letterSpacing: "-0.01em",
           }}
         >
           Меню
         </button>
 
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
           <span
             style={{
               fontWeight: 900,
-              fontSize: 16,
-              letterSpacing: "0.06em",
-              color: "#000",
+              fontSize: 15,
+              letterSpacing: "0.05em",
+              color: "#111",
             }}
           >
             ФОКСФОРД
           </span>
           <span
             style={{
-              fontWeight: 700,
-              fontSize: 11,
+              fontWeight: 800,
+              fontSize: 10,
               color: "#F96B1B",
               letterSpacing: "0.12em",
             }}
@@ -65,19 +64,19 @@ export default function Header() {
             width: 36,
             height: 36,
             borderRadius: "50%",
-            background: "#C084FC",
+            background: "#A855F7",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "white",
-            fontWeight: 700,
+            fontWeight: 800,
             fontSize: 14,
             flexShrink: 0,
           }}
         >
           А
         </div>
-        <span style={{ fontSize: 14, fontWeight: 400, color: "#333" }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>
           Анна Петрова
         </span>
       </div>
