@@ -108,15 +108,12 @@ export default function DashboardPage() {
     <div>
       {/* Info banner */}
       <div
+        className="fox-banner"
         style={{
           background: "linear-gradient(135deg, #E8F4FF 0%, #F0EBFF 100%)",
           borderRadius: 16,
           padding: "20px 28px",
           marginBottom: 28,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
         }}
       >
         <div>
@@ -137,6 +134,7 @@ export default function DashboardPage() {
         </div>
         <Link
           href="/dashboard/quiz"
+          className="fox-banner-cta"
           style={{
             background: "#F96B1B",
             color: "white",
@@ -148,20 +146,15 @@ export default function DashboardPage() {
             whiteSpace: "nowrap",
             flexShrink: 0,
             letterSpacing: "-0.01em",
+            display: "block",
           }}
         >
           Попробовать
         </Link>
       </div>
 
-      {/* Tool cards grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 16,
-        }}
-      >
+      {/* Tool cards grid: 2-col on desktop, 1-col on mobile */}
+      <div className="fox-tools-grid">
         {TOOLS.map((tool) => {
           const illustrationColor = tool.active ? tool.accentColor : "#C8C8CC";
 
@@ -187,7 +180,7 @@ export default function DashboardPage() {
                 color: "inherit",
               }}
             >
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div
                   style={{
                     display: "flex",
@@ -218,6 +211,7 @@ export default function DashboardPage() {
                         fontWeight: 700,
                         letterSpacing: "0.04em",
                         textTransform: "uppercase" as const,
+                        whiteSpace: "nowrap" as const,
                       }}
                     >
                       Скоро
@@ -236,17 +230,11 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Illustration */}
+              {/* Illustration — responsive size via CSS class */}
               <div
+                className="fox-tool-illustration"
                 style={{
-                  width: 76,
-                  height: 76,
-                  borderRadius: 16,
                   background: tool.active ? tool.bgColor : "#F0F0F4",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
                 }}
               >
                 <ToolIllustration id={tool.id} color={illustrationColor} />

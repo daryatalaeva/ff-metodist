@@ -20,15 +20,10 @@ export default function DashboardLayout({
     pathname === "/dashboard" || pathname.startsWith("/dashboard/quiz");
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#F5F5F7",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "#F5F5F7" }}>
       <Header />
 
-      {/* Nav tabs bar */}
+      {/* Nav tabs bar — horizontally scrollable on mobile */}
       <div
         style={{
           background: "white",
@@ -36,6 +31,7 @@ export default function DashboardLayout({
         }}
       >
         <div
+          className="fox-nav-scroll"
           style={{
             display: "flex",
             maxWidth: 1100,
@@ -74,11 +70,7 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      <main
-        style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}
-      >
-        {children}
-      </main>
+      <main className="fox-main">{children}</main>
     </div>
   );
 }

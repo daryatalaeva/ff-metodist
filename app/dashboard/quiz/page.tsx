@@ -382,14 +382,7 @@ export default function QuizPage() {
 
       <BackLink />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 24,
-          alignItems: "start",
-        }}
-      >
+      <div className="fox-form-grid">
         {/* ══ LEFT COLUMN ══ */}
         <div
           style={{ background: "white", borderRadius: 14, padding: "28px 30px" }}

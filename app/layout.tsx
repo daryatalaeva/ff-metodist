@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   description: "ИИ-помощник для учителей",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

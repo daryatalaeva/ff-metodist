@@ -1,11 +1,11 @@
 export default function Header() {
   return (
     <header
+      className="fox-header-padding"
       style={{
         height: 60,
         background: "white",
         borderBottom: "1px solid rgba(0,0,0,0.07)",
-        padding: "0 32px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -76,7 +76,8 @@ export default function Header() {
         >
           А
         </div>
-        <span style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>
+        {/* Hidden on mobile via CSS class */}
+        <span className="fox-header-username" style={{ fontSize: 14, fontWeight: 600, color: "#333" }}>
           Анна Петрова
         </span>
       </div>

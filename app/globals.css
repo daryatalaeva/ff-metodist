@@ -124,3 +124,95 @@ body {
   transform: translateY(-3px);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.11);
 }
+
+/* ─── Responsive layout ─── */
+
+.fox-header-padding {
+  padding: 0 32px;
+}
+
+/* Nav tabs horizontal scroll without visible scrollbar */
+.fox-nav-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.fox-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Main page container */
+.fox-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* Tools grid 2-col → 1-col */
+.fox-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Illustration box in tool card */
+.fox-tool-illustration {
+  width: 76px;
+  height: 76px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Info banner horizontal layout */
+.fox-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Quiz form 2-col → 1-col */
+.fox-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Tablet ≤ 900px ── */
+@media (max-width: 900px) {
+  .fox-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Mobile ≤ 640px ── */
+@media (max-width: 640px) {
+  .fox-header-padding {
+    padding: 0 16px;
+  }
+  .fox-header-username {
+    display: none;
+  }
+  .fox-main {
+    padding: 16px 12px;
+  }
+  .fox-tools-grid {
+    grid-template-columns: 1fr;
+  }
+  .fox-tool-illustration {
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+  }
+  .fox-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fox-banner-cta {
+    text-align: center;
+  }
+}
