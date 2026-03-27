@@ -5,6 +5,8 @@ export interface QuizPromptParams {
   examFormat?: string | null
   questionTypes: string[]
   questionCount: number
+  /** When multiple types selected: per-type counts (overrides questionCount) */
+  questionCountPerType?: Record<string, number>
   textbookName?: string | null
   extraInstructions?: string | null
 }
@@ -51,6 +53,13 @@ ${INVALID_TOPIC_SCHEMA}
 
 Если тема корректна — верни тест в JSON-формате без markdown-обёртки и без пояснений вне JSON.`
 
+const TYPE_LABELS_RU: Record<string, string> = {
+  single_choice: 'С выбором одного ответа',
+  multiple_choice: 'С выбором нескольких ответов',
+  true_false: 'Верно / Неверно',
+  short_answer: 'Краткий ответ',
+}
+
 export function buildQuizPrompt(params: QuizPromptParams): string {
   const {
     subject,
@@ -59,6 +68,7 @@ export function buildQuizPrompt(params: QuizPromptParams): string {
     examFormat,
     questionTypes,
     questionCount,
+    questionCountPerType,
     textbookName,
     extraInstructions,
   } = params
@@ -67,14 +77,27 @@ export function buildQuizPrompt(params: QuizPromptParams): string {
     ? (EXAM_FORMAT_MAP[examFormat] ?? 'Без привязки к стандарту')
     : 'Без привязки к стандарту'
 
+  const isMultiType = questionTypes.length > 1 && questionCountPerType
+
   const lines: string[] = [
     `Создай тест по предмету: ${subject}`,
     `Класс: ${grade}`,
     `Тема: ${topic}`,
     `Стандарт: ${formatLabel}`,
-    `Типы вопросов: ${questionTypes.join(', ')}`,
-    `Количество вопросов: ${questionCount}`,
   ]
+
+  if (isMultiType) {
+    const total = questionTypes.reduce((s, t) => s + (questionCountPerType![t] ?? 0), 0)
+    lines.push('Типы вопросов и количество каждого:')
+    for (const t of questionTypes) {
+      const cnt = questionCountPerType![t] ?? 0
+      lines.push(`  - ${TYPE_LABELS_RU[t] ?? t}: ${cnt} вопр.`)
+    }
+    lines.push(`Итого: ${total} вопросов`)
+  } else {
+    lines.push(`Типы вопросов: ${questionTypes.join(', ')}`)
+    lines.push(`Количество вопросов: ${questionCount}`)
+  }
 
   if (textbookName) {
     lines.push(`Ориентируйся на материал учебника: ${textbookName}`)

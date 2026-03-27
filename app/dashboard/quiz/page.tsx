@@ -77,7 +77,10 @@ interface FormState {
   topic: string;
   examFormat: string;
   questionTypes: string[];
+  /** Single-type mode: total count. Multi-type mode: ignored (use questionCountPerType). */
   questionCount: number;
+  /** Per-type counts, always kept in sync with questionTypes. */
+  questionCountPerType: Record<string, number>;
   textbookName: string;
   extraInstructions: string;
 }
@@ -94,6 +97,7 @@ export default function QuizPage() {
     examFormat: "ФГОС",
     questionTypes: ["single_choice"],
     questionCount: 10,
+    questionCountPerType: { single_choice: 10 },
     textbookName: "",
     extraInstructions: "",
   });
@@ -137,13 +141,31 @@ export default function QuizPage() {
   }
 
   function toggleQType(type: string) {
-    setForm((prev) => ({
-      ...prev,
-      questionTypes: prev.questionTypes.includes(type)
+    setForm((prev) => {
+      const has = prev.questionTypes.includes(type);
+      const nextTypes = has
         ? prev.questionTypes.filter((t) => t !== type)
-        : [...prev.questionTypes, type],
-    }));
+        : [...prev.questionTypes, type];
+
+      const nextPerType = { ...prev.questionCountPerType };
+      if (!has) {
+        // Adding: default to 3, or reuse existing value
+        nextPerType[type] = nextPerType[type] ?? 3;
+      } else {
+        delete nextPerType[type];
+      }
+
+      return { ...prev, questionTypes: nextTypes, questionCountPerType: nextPerType };
+    });
     setFieldErrors((prev) => ({ ...prev, questionTypes: "" }));
+  }
+
+  function adjustTypeCount(type: string, delta: number) {
+    setForm((prev) => {
+      const cur = prev.questionCountPerType[type] ?? 3;
+      const next = Math.max(1, Math.min(20, cur + delta));
+      return { ...prev, questionCountPerType: { ...prev.questionCountPerType, [type]: next } };
+    });
   }
 
   /* ─── Validation ─── */
@@ -191,7 +213,10 @@ export default function QuizPage() {
           topic: form.topic.trim(),
           examFormat: form.examFormat === "none" ? null : form.examFormat,
           questionTypes: form.questionTypes,
-          questionCount: form.questionCount,
+          questionCount: form.questionTypes.length === 1
+            ? form.questionCount
+            : form.questionTypes.reduce((s, t) => s + (form.questionCountPerType[t] ?? 3), 0),
+          ...(form.questionTypes.length > 1 && { questionCountPerType: form.questionCountPerType }),
           textbookName: form.textbookName.trim() || null,
           extraInstructions: form.extraInstructions.trim() || null,
         }),
@@ -542,26 +567,12 @@ export default function QuizPage() {
                       }}
                     >
                       {checked && (
-                        <svg
-                          width="11"
-                          height="8"
-                          viewBox="0 0 11 8"
-                          fill="none"
-                        >
-                          <path
-                            d="M1 4L4 7L10 1"
-                            stroke="white"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                        <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                          <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
                     </div>
-                    <span
-                      onClick={() => toggleQType(qt.value)}
-                      style={{ fontSize: 14, color: "#333" }}
-                    >
+                    <span onClick={() => toggleQType(qt.value)} style={{ fontSize: 14, color: "#333" }}>
                       {qt.label}
                     </span>
                   </label>
@@ -570,35 +581,128 @@ export default function QuizPage() {
             </div>
           </Field>
 
-          {/* Question count */}
-          <Field label="Количество вопросов" error={undefined}>
-            <div style={{ display: "flex", gap: 8 }}>
-              {QUESTION_COUNTS.map((cnt) => {
-                const active = form.questionCount === cnt;
-                return (
-                  <button
-                    key={cnt}
-                    onClick={() =>
-                      setForm((p) => ({ ...p, questionCount: cnt }))
-                    }
-                    style={{
-                      borderRadius: 20,
-                      padding: "7px 22px",
-                      border: `1.5px solid ${active ? "#F96B1B" : "rgba(0,0,0,0.15)"}`,
-                      background: active ? "#FEF0E6" : "white",
-                      color: active ? "#F96B1B" : "#444",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {cnt}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
+          {/* Question count — single type: pill buttons; multi-type: per-type steppers */}
+          {form.questionTypes.length <= 1 ? (
+            <Field label="Количество вопросов" error={undefined}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {QUESTION_COUNTS.map((cnt) => {
+                  const active = form.questionCount === cnt;
+                  return (
+                    <button
+                      key={cnt}
+                      onClick={() =>
+                        setForm((p) => ({
+                          ...p,
+                          questionCount: cnt,
+                          questionCountPerType: p.questionTypes[0]
+                            ? { [p.questionTypes[0]]: cnt }
+                            : p.questionCountPerType,
+                        }))
+                      }
+                      style={{
+                        borderRadius: 20,
+                        padding: "7px 22px",
+                        border: `1.5px solid ${active ? "#F96B1B" : "rgba(0,0,0,0.15)"}`,
+                        background: active ? "#FEF0E6" : "white",
+                        color: active ? "#F96B1B" : "#444",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {cnt}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+          ) : (
+            <Field label="Количество вопросов по типам" error={undefined}>
+              <div
+                style={{
+                  background: "#F7F7FC",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+              >
+                {form.questionTypes.map((type, i) => {
+                  const label = QUESTION_TYPES.find((qt) => qt.value === type)?.label ?? type;
+                  const count = form.questionCountPerType[type] ?? 3;
+                  const isLast = i === form.questionTypes.length - 1;
+                  return (
+                    <div
+                      key={type}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "11px 14px",
+                        borderBottom: isLast ? "none" : "1px solid rgba(0,0,0,0.07)",
+                      }}
+                    >
+                      <span style={{ fontSize: 13, color: "#333", lineHeight: 1.3, flex: 1 }}>
+                        {label}
+                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                        <button
+                          onClick={() => adjustTypeCount(type, -1)}
+                          disabled={count <= 1}
+                          style={{
+                            width: 28, height: 28, borderRadius: "50%",
+                            border: "1.5px solid rgba(0,0,0,0.15)",
+                            background: count <= 1 ? "#F0F0F0" : "white",
+                            color: count <= 1 ? "#CCC" : "#333",
+                            fontSize: 16, lineHeight: 1,
+                            cursor: count <= 1 ? "not-allowed" : "pointer",
+                            fontFamily: "inherit", fontWeight: 700,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}
+                        >
+                          −
+                        </button>
+                        <span style={{ minWidth: 24, textAlign: "center", fontSize: 15, fontWeight: 700, color: "#111" }}>
+                          {count}
+                        </span>
+                        <button
+                          onClick={() => adjustTypeCount(type, 1)}
+                          disabled={count >= 20}
+                          style={{
+                            width: 28, height: 28, borderRadius: "50%",
+                            border: "1.5px solid rgba(0,0,0,0.15)",
+                            background: count >= 20 ? "#F0F0F0" : "white",
+                            color: count >= 20 ? "#CCC" : "#333",
+                            fontSize: 16, lineHeight: 1,
+                            cursor: count >= 20 ? "not-allowed" : "pointer",
+                            fontFamily: "inherit", fontWeight: 700,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Total row */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px 14px",
+                    background: "#EEEEF6",
+                    borderTop: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#555" }}>Итого</span>
+                  <span style={{ fontSize: 15, fontWeight: 900, color: "#F96B1B" }}>
+                    {form.questionTypes.reduce((s, t) => s + (form.questionCountPerType[t] ?? 3), 0)} вопросов
+                  </span>
+                </div>
+              </div>
+            </Field>
+          )}
 
           {/* CTA */}
           <button

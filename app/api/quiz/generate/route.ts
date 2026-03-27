@@ -11,6 +11,7 @@ interface GenerateBody {
   topic?: unknown
   questionTypes?: unknown
   questionCount?: unknown
+  questionCountPerType?: unknown
   examFormat?: unknown
   textbookName?: unknown
   extraInstructions?: unknown
@@ -68,6 +69,12 @@ export async function POST(req: NextRequest) {
   const topic = (body.topic as string).trim()
   const questionTypes = body.questionTypes as string[]
   const questionCount = body.questionCount as number
+  const questionCountPerType =
+    body.questionCountPerType &&
+    typeof body.questionCountPerType === 'object' &&
+    !Array.isArray(body.questionCountPerType)
+      ? (body.questionCountPerType as Record<string, number>)
+      : undefined
   const examFormat = typeof body.examFormat === 'string' ? body.examFormat : null
   const textbookName = typeof body.textbookName === 'string' ? body.textbookName.trim() || null : null
   const extraInstructions = typeof body.extraInstructions === 'string' ? body.extraInstructions.trim() || null : null
@@ -98,7 +105,7 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  const prompt = buildQuizPrompt({ subject, grade, topic, examFormat, questionTypes, questionCount, textbookName, extraInstructions })
+  const prompt = buildQuizPrompt({ subject, grade, topic, examFormat, questionTypes, questionCount, questionCountPerType, textbookName, extraInstructions })
   const llm = getLLMClient()
 
   const encoder = new TextEncoder()
