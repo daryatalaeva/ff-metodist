@@ -25,8 +25,8 @@ const TOOLS = [
     desc: "Педагогическая характеристика ученика по заданным параметрам",
     href: "#",
     active: false,
-    accentColor: "#9333EA",
-    bgColor: "#F3E8FF",
+    accentColor: "#7B2FBE",
+    bgColor: "#EDE9FE",
   },
   {
     id: "ktp",
@@ -41,7 +41,7 @@ const TOOLS = [
 
 function QuizIllustration({ color }: { color: string }) {
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <rect x="8" y="5" width="24" height="30" rx="3.5" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="1.6"/>
       <rect x="12" y="4" width="10" height="5" rx="2" fill={color}/>
       <line x1="14" y1="15" x2="26" y2="15" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
@@ -55,7 +55,7 @@ function QuizIllustration({ color }: { color: string }) {
 
 function LessonIllustration({ color }: { color: string }) {
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <path d="M22 11C22 11 15 8.5 8 10V34C15 32.5 22 35 22 35C22 35 29 32.5 36 34V10C29 8.5 22 11 22 11Z" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="1.6" strokeLinejoin="round"/>
       <line x1="22" y1="11" x2="22" y2="35" stroke={color} strokeWidth="1.6"/>
       <line x1="13" y1="16" x2="19" y2="15" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
@@ -70,7 +70,7 @@ function LessonIllustration({ color }: { color: string }) {
 
 function CharIllustration({ color }: { color: string }) {
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="16" r="7" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="1.6"/>
       <path d="M9 37C9 30.373 14.925 25 22 25C29.075 25 35 30.373 35 37" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
       <circle cx="32" cy="12" r="5" fill={color}/>
@@ -81,7 +81,7 @@ function CharIllustration({ color }: { color: string }) {
 
 function KtpIllustration({ color }: { color: string }) {
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <rect x="6" y="10" width="32" height="28" rx="4" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="1.6"/>
       <line x1="6" y1="18" x2="38" y2="18" stroke={color} strokeWidth="1.4"/>
       <line x1="15" y1="6" x2="15" y2="13" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
@@ -106,54 +106,40 @@ function ToolIllustration({ id, color }: { id: string; color: string }) {
 export default function DashboardPage() {
   return (
     <div>
-      {/* Info banner */}
+      {/* Info banner — Foxford-style: bold title, orange CTA pill */}
       <div
         className="fox-banner"
         style={{
-          background: "linear-gradient(135deg, #E8F4FF 0%, #F0EBFF 100%)",
-          borderRadius: 16,
-          padding: "20px 28px",
-          marginBottom: 28,
+          background: "white",
+          borderRadius: 20,
+          padding: "24px 32px",
+          marginBottom: 24,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         }}
       >
         <div>
           <p
             style={{
-              margin: 0,
-              fontWeight: 700,
-              fontSize: 15,
+              margin: "0 0 6px",
+              fontWeight: 900,
+              fontSize: 18,
               color: "#111",
-              letterSpacing: "-0.01em",
+              letterSpacing: "-0.02em",
+              lineHeight: 1.3,
             }}
           >
-            Укажите параметры — и получите готовый тест за 2 минуты
+            Укажите параметры — получите готовый тест за 2 минуты
           </p>
-          <p style={{ margin: "5px 0 0", fontSize: 14, color: "#555", lineHeight: 1.5 }}>
+          <p style={{ margin: 0, fontSize: 14, color: "#777", lineHeight: 1.5 }}>
             ИИ-методист создаст тест по ФГОС с вариантами ответов и ключами
           </p>
         </div>
-        <Link
-          href="/dashboard/quiz"
-          className="fox-banner-cta"
-          style={{
-            background: "#F96B1B",
-            color: "white",
-            borderRadius: 12,
-            padding: "11px 24px",
-            fontSize: 14,
-            fontWeight: 700,
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            letterSpacing: "-0.01em",
-            display: "block",
-          }}
-        >
-          Попробовать
+        <Link href="/dashboard/quiz" className="fox-btn-primary fox-banner-cta">
+          Попробовать →
         </Link>
       </div>
 
-      {/* Tool cards grid: 2-col on desktop, 1-col on mobile */}
+      {/* Tool cards grid */}
       <div className="fox-tools-grid">
         {TOOLS.map((tool) => {
           const illustrationColor = tool.active ? tool.accentColor : "#C8C8CC";
@@ -162,67 +148,69 @@ export default function DashboardPage() {
             <div
               className={tool.active ? "fox-card" : undefined}
               style={{
-                background: "white",
-                borderRadius: 16,
-                padding: "24px 28px",
-                border: tool.active
-                  ? `2px solid ${tool.accentColor}22`
-                  : "2px solid transparent",
-                opacity: tool.active ? 1 : 0.55,
+                background: tool.active ? tool.bgColor : "#F5F5F7",
+                borderRadius: 20,
+                padding: "24px 26px",
+                opacity: tool.active ? 1 : 0.6,
                 display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 20,
+                flexDirection: "column",
+                gap: 16,
                 cursor: tool.active ? "pointer" : "default",
-                minHeight: 114,
+                minHeight: 180,
                 textDecoration: "none",
                 color: "inherit",
+                position: "relative" as const,
               }}
             >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    marginBottom: 8,
-                  }}
-                >
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: "#111",
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    {tool.title}
-                  </h3>
+              {/* Illustration top-right */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
                   {!tool.active && (
                     <span
                       style={{
-                        background: "#F0F0F4",
-                        color: "#999",
+                        display: "inline-block",
+                        background: "#7B2FBE",
+                        color: "white",
                         borderRadius: 20,
-                        padding: "2px 10px",
+                        padding: "3px 12px",
                         fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: "0.04em",
                         textTransform: "uppercase" as const,
-                        whiteSpace: "nowrap" as const,
+                        marginBottom: 10,
                       }}
                     >
                       Скоро
                     </span>
                   )}
                 </div>
+                <div
+                  className="fox-tool-illustration"
+                  style={{ background: "rgba(255,255,255,0.6)" }}
+                >
+                  <ToolIllustration id={tool.id} color={illustrationColor} />
+                </div>
+              </div>
+
+              {/* Text */}
+              <div style={{ flex: 1 }}>
+                <h3
+                  style={{
+                    margin: "0 0 8px",
+                    fontSize: 17,
+                    fontWeight: 900,
+                    color: "#111",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {tool.title}
+                </h3>
                 <p
                   style={{
                     margin: 0,
                     fontSize: 13,
-                    color: "#6B6B80",
+                    color: "#555",
                     lineHeight: 1.55,
                   }}
                 >
@@ -230,15 +218,21 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Illustration — responsive size via CSS class */}
-              <div
-                className="fox-tool-illustration"
-                style={{
-                  background: tool.active ? tool.bgColor : "#F0F0F4",
-                }}
-              >
-                <ToolIllustration id={tool.id} color={illustrationColor} />
-              </div>
+              {/* CTA link */}
+              {tool.active && (
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: tool.accentColor,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  Создать тест →
+                </div>
+              )}
             </div>
           );
 

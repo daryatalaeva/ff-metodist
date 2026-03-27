@@ -56,7 +56,7 @@ export default function LimitModal({ onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "white",
-          borderRadius: 18,
+          borderRadius: 24,
           padding: "36px 32px",
           maxWidth: 440,
           width: "100%",
@@ -193,7 +193,7 @@ export default function LimitModal({ onClose }: Props) {
                 background: "#F96B1B",
                 color: "white",
                 border: "none",
-                borderRadius: 10,
+                borderRadius: 14,
                 padding: 13,
                 fontSize: 15,
                 fontWeight: 700,

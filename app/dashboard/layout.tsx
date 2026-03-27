@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_TABS = [
-  { label: "ИНСТРУМЕНТЫ", href: "/dashboard" },
-  { label: "МОИ ГЕНЕРАЦИИ", href: "/dashboard/history" },
-  { label: "НАСТРОЙКИ", href: "/dashboard/settings" },
+  { label: "Инструменты", href: "/dashboard" },
+  { label: "Мои генерации", href: "/dashboard/history" },
+  { label: "Настройки", href: "/dashboard/settings" },
 ];
 
 export default function DashboardLayout({
@@ -20,14 +20,14 @@ export default function DashboardLayout({
     pathname === "/dashboard" || pathname.startsWith("/dashboard/quiz");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F5F5F7" }}>
+    <div style={{ minHeight: "100vh", background: "#F7F7FC" }}>
       <Header />
 
       {/* Nav tabs bar — horizontally scrollable on mobile */}
       <div
         style={{
           background: "white",
-          borderBottom: "1px solid rgba(0,0,0,0.08)",
+          borderBottom: "1px solid rgba(0,0,0,0.07)",
         }}
       >
         <div
@@ -50,17 +50,17 @@ export default function DashboardLayout({
                 href={tab.href}
                 style={{
                   display: "block",
-                  padding: "16px 20px",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  letterSpacing: "0.05em",
-                  color: active ? "#F96B1B" : "#888",
+                  padding: "15px 20px",
+                  fontSize: 14,
+                  fontWeight: active ? 700 : 500,
+                  color: active ? "#F96B1B" : "#777",
                   textDecoration: "none",
                   borderBottom: active
                     ? "2px solid #F96B1B"
                     : "2px solid transparent",
                   marginBottom: -1,
                   whiteSpace: "nowrap",
+                  transition: "color 0.15s",
                 }}
               >
                 {tab.label}

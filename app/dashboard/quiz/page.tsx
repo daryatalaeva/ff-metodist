@@ -303,7 +303,7 @@ export default function QuizPage() {
         <div
           style={{
             background: "white",
-            borderRadius: 14,
+            borderRadius: 20,
             padding: "40px 32px",
           }}
         >
@@ -344,7 +344,7 @@ export default function QuizPage() {
         <div
           style={{
             background: "white",
-            borderRadius: 14,
+            borderRadius: 20,
             padding: "32px",
           }}
         >
@@ -385,14 +385,15 @@ export default function QuizPage() {
       <div className="fox-form-grid">
         {/* ══ LEFT COLUMN ══ */}
         <div
-          style={{ background: "white", borderRadius: 14, padding: "28px 30px" }}
+          style={{ background: "white", borderRadius: 20, padding: "28px 30px" }}
         >
           <h2
             style={{
               margin: "0 0 24px",
-              fontSize: 16,
-              fontWeight: 700,
+              fontSize: 17,
+              fontWeight: 900,
               color: "#111",
+              letterSpacing: "-0.02em",
             }}
           >
             Параметры теста
@@ -602,21 +603,10 @@ export default function QuizPage() {
           {/* CTA */}
           <button
             onClick={handleSubmit}
-            style={{
-              width: "100%",
-              background: "#F96B1B",
-              color: "white",
-              border: "none",
-              borderRadius: 10,
-              padding: 13,
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              marginTop: 8,
-            }}
+            className="fox-btn-primary"
+            style={{ width: "100%", justifyContent: "center", marginTop: 8, borderRadius: 14 }}
           >
-            Сгенерировать тест
+            Сгенерировать тест →
           </button>
 
           {/* Generation counter */}
@@ -659,14 +649,15 @@ export default function QuizPage() {
 
         {/* ══ RIGHT COLUMN ══ */}
         <div
-          style={{ background: "white", borderRadius: 14, padding: "28px 30px" }}
+          style={{ background: "white", borderRadius: 20, padding: "28px 30px" }}
         >
           <h2
             style={{
               margin: "0 0 24px",
-              fontSize: 16,
-              fontWeight: 700,
+              fontSize: 17,
+              fontWeight: 900,
               color: "#111",
+              letterSpacing: "-0.02em",
             }}
           >
             Дополнительно
@@ -763,7 +754,7 @@ function BackLink() {
       <Link
         href="/dashboard"
         style={{
-          color: "#2B7FFF",
+          color: "#F96B1B",
           fontSize: 14,
           fontWeight: 600,
           textDecoration: "none",

@@ -75,7 +75,7 @@ export default function QuizResultView({ result, generationId, onRegenerate }: P
     <div>
       {/* ── Title + meta ── */}
       <div style={{ marginBottom: 28 }}>
-        <h2 style={{ margin: "0 0 14px", fontSize: 22, fontWeight: 900, color: "#111" }}>
+        <h2 style={{ margin: "0 0 14px", fontSize: 22, fontWeight: 900, color: "#111", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
           {result.title}
         </h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -122,9 +122,9 @@ export default function QuizResultView({ result, generationId, onRegenerate }: P
           👎 Не подходит
         </FeedbackBtn>
 
-        <ActionBtn onClick={handleRegenerate}>↺ Сгенерировать ещё раз</ActionBtn>
-        <ActionBtn onClick={handleCopy}>⎘ {copyLabel}</ActionBtn>
-        <ActionBtn onClick={handleDownload}>↓ {dlLabel}</ActionBtn>
+        <ActionBtn onClick={handleRegenerate}>Сгенерировать ещё раз →</ActionBtn>
+        <ActionBtn onClick={handleCopy}>{copyLabel}</ActionBtn>
+        <ActionBtn onClick={handleDownload}>{dlLabel} ↓</ActionBtn>
       </div>
     </div>
   );
@@ -136,12 +136,12 @@ function MetaTag({ text }: { text: string }) {
   return (
     <span
       style={{
-        background: "#F3F4F6",
+        background: "#EDE9FE",
         borderRadius: 20,
         padding: "4px 13px",
         fontSize: 13,
-        fontWeight: 600,
-        color: "#555",
+        fontWeight: 700,
+        color: "#7B2FBE",
       }}
     >
       {text}
@@ -242,7 +242,7 @@ function QuestionCard({ question }: { question: Question }) {
     <div
       style={{
         background: "white",
-        borderRadius: 14,
+        borderRadius: 16,
         padding: "22px 26px",
       }}
     >

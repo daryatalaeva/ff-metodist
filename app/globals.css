@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: #F5F5F7;
+  --background: #F7F7FC;
   --foreground: #111111;
+  --fox-orange: #F96B1B;
+  --fox-purple: #7B2FBE;
+  --fox-purple-light: #EDE9FE;
 }
 
 * {
@@ -25,7 +28,7 @@ body {
 .fox-input {
   height: 44px;
   border: 1.5px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0 14px;
   font-size: 15px;
   font-family: inherit;
@@ -39,7 +42,7 @@ body {
 
 .fox-input:focus {
   outline: none;
-  border-color: #F96B1B;
+  border-color: var(--fox-orange);
 }
 
 .fox-input::placeholder {
@@ -48,7 +51,7 @@ body {
 
 .fox-textarea {
   border: 1.5px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 11px 14px;
   font-size: 15px;
   font-family: inherit;
@@ -62,7 +65,7 @@ body {
 
 .fox-textarea:focus {
   outline: none;
-  border-color: #F96B1B;
+  border-color: var(--fox-orange);
 }
 
 .fox-textarea::placeholder {
@@ -100,8 +103,8 @@ body {
 
 /* Streaming pre */
 .stream-pre {
-  background: #F5F5F7;
-  border-radius: 10px;
+  background: #F7F7FC;
+  border-radius: 12px;
   padding: 16px;
   font-size: 13px;
   line-height: 1.6;
@@ -114,15 +117,45 @@ body {
   margin: 0;
 }
 
+/* ─── Primary CTA button — pill, orange, arrow ─── */
+.fox-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--fox-orange);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 26px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s, transform 0.15s;
+  letter-spacing: -0.01em;
+}
+
+.fox-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.fox-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* ─── Tool card hover animation ─── */
 .fox-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .fox-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.11);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.10);
 }
 
 /* ─── Responsive layout ─── */
@@ -214,5 +247,6 @@ body {
   }
   .fox-banner-cta {
     text-align: center;
+    justify-content: center;
   }
 }
