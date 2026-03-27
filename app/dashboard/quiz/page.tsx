@@ -105,14 +105,12 @@ export default function QuizPage() {
   const [usedGenerations, setUsedGenerations] = useState(0);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [mode, setMode] = useState<Mode>("form");
-  const [streamedText, setStreamedText] = useState("");
   const [result, setResult] = useState<QuizResult | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [dragOver, setDragOver] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const streamEndRef = useRef<HTMLDivElement>(null);
 
   // Load generation count from localStorage on mount
   useEffect(() => {
@@ -194,7 +192,6 @@ export default function QuizPage() {
     }
 
     setMode("generating");
-    setStreamedText("");
     setResult(null);
     setServerError(null);
     setGenerationId(null);
@@ -262,9 +259,6 @@ export default function QuizPage() {
 
             if (data.text) {
               fullText += data.text;
-              setStreamedText(fullText);
-              // scroll to bottom of stream
-              setTimeout(() => streamEndRef.current?.scrollIntoView({ behavior: "smooth" }), 0);
             }
             if (data.done && data.generationId) {
               setGenerationId(data.generationId);
@@ -313,7 +307,6 @@ export default function QuizPage() {
   function handleRegenerate() {
     setMode("form");
     setResult(null);
-    setStreamedText("");
     setGenerationId(null);
   }
 
@@ -332,30 +325,17 @@ export default function QuizPage() {
             padding: "40px 32px",
           }}
         >
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <div
-              style={{
-                fontSize: 40,
-                marginBottom: 14,
-                animation: "spin 1.5s linear infinite",
-              }}
-            >
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 56, marginBottom: 20, display: "inline-block", animation: "hourglass 2s ease-in-out infinite" }}>
               ⏳
             </div>
-            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700 }}>
+            <h2 style={{ margin: "0 0 10px", fontSize: 20, fontWeight: 900, letterSpacing: "-0.02em" }}>
               Генерируем тест…
             </h2>
-            <p style={{ margin: 0, fontSize: 14, color: "#777" }}>
+            <p style={{ margin: 0, fontSize: 14, color: "#999" }}>
               Обычно занимает 20–40 секунд
             </p>
           </div>
-
-          {streamedText && (
-            <>
-              <pre className="stream-pre">{streamedText}</pre>
-              <div ref={streamEndRef} />
-            </>
-          )}
         </div>
       </div>
     );
