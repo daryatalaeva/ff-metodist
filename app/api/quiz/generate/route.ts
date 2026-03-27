@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getLLMClient } from '@/lib/llm'
 import { buildQuizPrompt, QUIZ_SYSTEM_PROMPT } from '@/lib/llm/prompts/quiz'
 import { extractJson } from '@/lib/llm/parseJson'
+import { validateCurriculumTopic } from '@/lib/curriculum/validate'
 import { prisma } from '@/lib/db/prisma'
 
 interface GenerateBody {
@@ -71,6 +72,15 @@ export async function POST(req: NextRequest) {
   const textbookName = typeof body.textbookName === 'string' ? body.textbookName.trim() || null : null
   const extraInstructions = typeof body.extraInstructions === 'string' ? body.extraInstructions.trim() || null : null
   const userId = typeof body.userId === 'string' ? body.userId : null
+
+  // ── Curriculum validation (before DB record / LLM call) ──────────────────
+  const curriculumCheck = await validateCurriculumTopic(subject, grade, topic)
+  if (!curriculumCheck.valid) {
+    return Response.json(
+      { error: 'topic_invalid', message: curriculumCheck.reason },
+      { status: 422 },
+    )
+  }
 
   // Create generation record upfront
   const generation = await prisma.generation.create({

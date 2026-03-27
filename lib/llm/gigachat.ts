@@ -138,6 +138,30 @@ function httpsStream(
 /* ─── GigaChatClient ─── */
 
 export class GigaChatClient implements LLMClient {
+  async text(prompt: string, systemPrompt: string): Promise<string> {
+    const accessToken = await getAccessToken()
+    const result = await httpsJson<{
+      choices: Array<{ message: { content: string } }>
+    }>(CHAT_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt },
+        ],
+        stream: false,
+        max_tokens: 256,
+        temperature: 0,
+      }),
+    })
+    return result.choices[0]?.message?.content ?? ''
+  }
+
   async generate(prompt: string, systemPrompt: string): Promise<ReadableStream> {
     const accessToken = await getAccessToken()
 

@@ -198,10 +198,14 @@ export default function QuizPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = await res.json().catch(() => ({})) as {
+          message?: string;
+          errors?: { message: string }[];
+        };
         setServerError(
-          (data as { errors?: { message: string }[] }).errors?.[0]?.message ??
-            "Ошибка запроса"
+          data.message ??
+          data.errors?.[0]?.message ??
+          "Ошибка запроса"
         );
         setMode("form");
         return;

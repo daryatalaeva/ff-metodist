@@ -12,6 +12,17 @@ export class ClaudeClient implements LLMClient {
     })
   }
 
+  async text(prompt: string, systemPrompt: string): Promise<string> {
+    const response = await this.client.messages.create({
+      model: MODEL,
+      max_tokens: 256,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const block = response.content.find((b) => b.type === 'text')
+    return block?.type === 'text' ? block.text : ''
+  }
+
   async generate(prompt: string, systemPrompt: string): Promise<ReadableStream> {
     const stream = this.client.messages.stream({
       model: MODEL,
