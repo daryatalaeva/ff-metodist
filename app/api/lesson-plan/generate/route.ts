@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getLLMClient } from '@/lib/llm'
-import { buildLessonPlanPrompt, LESSON_PLAN_SYSTEM_PROMPT } from '@/lib/llm/prompts/lesson_plan'
+import { buildLessonPlanPrompt } from '@/lib/llm/prompts/lesson_plan'
 import { extractJson } from '@/lib/llm/parseJson'
 import { checkGenerationLimit } from '@/lib/generation/limit'
 import { prisma } from '@/lib/db/prisma'
