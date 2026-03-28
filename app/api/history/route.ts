@@ -1,18 +1,27 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 
+const KNOWN_TYPES = ['quiz', 'lesson_plan'] as const
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const subject = searchParams.get('subject')
-  const grade = searchParams.get('grade')
-  const dateFrom = searchParams.get('dateFrom')
-  const dateTo = searchParams.get('dateTo')
+  const subject     = searchParams.get('subject')
+  const grade       = searchParams.get('grade')
+  const dateFrom    = searchParams.get('dateFrom')
+  const dateTo      = searchParams.get('dateTo')
+  const featureType = searchParams.get('featureType') // 'quiz' | 'lesson_plan' | null → all
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = { featureType: 'quiz' }
+  const where: any = {}
+
+  if (featureType && (KNOWN_TYPES as readonly string[]).includes(featureType)) {
+    where.featureType = featureType
+  } else {
+    where.featureType = { in: [...KNOWN_TYPES] }
+  }
 
   if (subject) where.subject = subject
-  if (grade) where.grade = parseInt(grade)
+  if (grade)   where.grade   = parseInt(grade)
   if (dateFrom || dateTo) {
     where.createdAt = {}
     if (dateFrom) where.createdAt.gte = new Date(dateFrom)
@@ -23,34 +32,36 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Fetch with resultJson so we can filter out failed generations server-side
   const rawGenerations = await prisma.generation.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     take: 200,
     select: {
-      id: true,
-      subject: true,
-      grade: true,
-      topic: true,
-      examFormat: true,
-      questionCount: true,
-      questionTypes: true,
-      feedback: true,
-      createdAt: true,
-      resultJson: true,
+      id:           true,
+      featureType:  true,
+      subject:      true,
+      grade:        true,
+      topic:        true,
+      examFormat:   true,
+      questionCount:true,
+      questionTypes:true,
+      lessonType:   true,
+      lessonForm:   true,
+      lessonDuration:true,
+      feedback:     true,
+      createdAt:    true,
+      resultJson:   true,
     },
   })
 
-  // Only show successful generations; strip heavy resultJson from list payload
   const generations = rawGenerations
     .filter((g) => g.resultJson !== null)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .map(({ resultJson: _dropped, ...rest }) => rest)
 
-  // All successful generations for filter dropdown options
+  // Filter options aggregate across all known types (independent of current featureType filter)
   const all = await prisma.generation.findMany({
-    where: { featureType: 'quiz' },
+    where: { featureType: { in: [...KNOWN_TYPES] } },
     select: { subject: true, grade: true, resultJson: true },
   })
   const successful = all.filter((g) => g.resultJson !== null)

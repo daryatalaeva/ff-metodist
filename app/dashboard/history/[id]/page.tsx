@@ -4,17 +4,25 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import QuizResultView from "@/components/quiz/QuizResult";
-import type { QuizResult } from "@/lib/types";
+import LessonPlanResultView from "@/components/lesson-plan/LessonPlanResult";
+import type { QuizResult, LessonPlanResult } from "@/lib/types";
+
+/* ─── Types ─────────────────────────────────────────────────────────────── */
 
 interface GenerationDetail {
   id: string;
+  featureType: string;
   subject: string | null;
   grade: number | null;
   topic: string | null;
   examFormat: string | null;
   questionCount: number | null;
   questionTypes: string[];
+  lessonType: string | null;
+  lessonForm: string | null;
+  lessonDuration: number | null;
   resultJson: unknown;
+  resultText: string | null;
   feedback: string | null;
   createdAt: string;
 }
@@ -29,12 +37,14 @@ function formatDate(iso: string) {
   });
 }
 
+/* ─── Page ───────────────────────────────────────────────────────────────── */
+
 export default function HistoryDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [generation, setGeneration] = useState<GenerationDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -44,7 +54,7 @@ export default function HistoryDetailPage() {
         const data = await res.json() as { generation: GenerationDetail };
         setGeneration(data.generation);
       } catch {
-        setError("Не удалось загрузить тест.");
+        setError("Не удалось загрузить генерацию.");
       } finally {
         setLoading(false);
       }
@@ -55,7 +65,7 @@ export default function HistoryDetailPage() {
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "80px 0", color: "#999", fontSize: 15 }}>
-        Загружаем тест…
+        Загружаем…
       </div>
     );
   }
@@ -80,7 +90,7 @@ export default function HistoryDetailPage() {
     );
   }
 
-  const result = generation.resultJson as QuizResult;
+  const isLesson = generation.featureType === "lesson_plan";
 
   return (
     <div>
@@ -101,6 +111,18 @@ export default function HistoryDetailPage() {
         }}
       >
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, alignItems: "center" }}>
+          {/* Type label */}
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: "#9CA3AF",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {isLesson ? "📋 План урока" : "📝 Тест"}
+          </span>
           {generation.subject && (
             <span style={{
               background: "#EDE9FE", color: "#7B2FBE",
@@ -119,7 +141,7 @@ export default function HistoryDetailPage() {
               {generation.grade} класс
             </span>
           )}
-          {generation.examFormat && generation.examFormat !== "none" && (
+          {!isLesson && generation.examFormat && generation.examFormat !== "none" && (
             <span style={{
               background: "#FEF0E6", color: "#F96B1B",
               borderRadius: 20, padding: "3px 12px",
@@ -134,17 +156,28 @@ export default function HistoryDetailPage() {
         </span>
       </div>
 
-      {/* Quiz result */}
+      {/* Result */}
       <div style={{ background: "white", borderRadius: 20, padding: "28px 32px" }}>
-        <QuizResultView
-          result={result}
-          generationId={generation.id}
-          onRegenerate={() => router.push("/dashboard/quiz")}
-        />
+        {isLesson ? (
+          <LessonPlanResultView
+            data={generation.resultJson as LessonPlanResult | null}
+            rawText={generation.resultText ?? ""}
+            generationId={generation.id}
+            onRegenerate={() => router.push("/dashboard/lesson-plan")}
+          />
+        ) : (
+          <QuizResultView
+            result={generation.resultJson as QuizResult}
+            generationId={generation.id}
+            onRegenerate={() => router.push("/dashboard/quiz")}
+          />
+        )}
       </div>
     </div>
   );
 }
+
+/* ─── BackLink ───────────────────────────────────────────────────────────── */
 
 function BackLink() {
   return (

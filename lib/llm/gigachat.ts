@@ -1,4 +1,4 @@
-import type { LLMClient } from './client'
+import type { LLMClient, LLMStreamResult } from './client'
 import https from 'node:https'
 import { randomUUID } from 'node:crypto'
 
@@ -162,7 +162,25 @@ export class GigaChatClient implements LLMClient {
     return result.choices[0]?.message?.content ?? ''
   }
 
-  async generate(prompt: string, systemPrompt: string): Promise<ReadableStream> {
+  async generate(prompt: string, systemPrompt: string): Promise<LLMStreamResult> {
+    return this._stream(systemPrompt, prompt)
+  }
+
+  /**
+   * GigaChat does not support native document inputs.
+   * The prompt already contains `hasFile: true` instructions (via buildLessonPlanPrompt),
+   * so we fall back to a plain text generation — the file content cannot be injected.
+   */
+  async generateWithFile(
+    prompt: string,
+    systemPrompt: string,
+    _fileUrl: string,
+    _mimeType: string,
+  ): Promise<LLMStreamResult> {
+    return this._stream(systemPrompt, prompt)
+  }
+
+  private async _stream(systemPrompt: string, prompt: string): Promise<LLMStreamResult> {
     const accessToken = await getAccessToken()
 
     const body = JSON.stringify({
@@ -182,7 +200,11 @@ export class GigaChatClient implements LLMClient {
       body,
     })
 
-    return new ReadableStream({
+    // GigaChat does not reliably expose token counts in the streaming API.
+    let resolveUsage!: (u: null) => void
+    const usage = new Promise<null>((resolve) => { resolveUsage = resolve })
+
+    const stream = new ReadableStream({
       start(controller) {
         const encoder = new TextEncoder()
         let buffer = ''
@@ -191,6 +213,7 @@ export class GigaChatClient implements LLMClient {
         function safeClose() {
           if (!closed) {
             closed = true
+            resolveUsage(null)
             controller.close()
           }
         }
@@ -235,10 +258,13 @@ export class GigaChatClient implements LLMClient {
         res.on('error', (err) => {
           if (!closed) {
             closed = true
+            resolveUsage(null)
             controller.error(err)
           }
         })
       },
     })
+
+    return { stream, usage }
   }
 }

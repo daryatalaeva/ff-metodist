@@ -1,20 +1,31 @@
 import { NextRequest } from 'next/server'
 import { getLLMClient } from '@/lib/llm'
-import { buildQuizPrompt, QUIZ_SYSTEM_PROMPT } from '@/lib/llm/prompts/quiz'
+import { buildLessonPlanPrompt, LESSON_PLAN_SYSTEM_PROMPT } from '@/lib/llm/prompts/lesson_plan'
 import { extractJson } from '@/lib/llm/parseJson'
-import { validateCurriculumTopic } from '@/lib/curriculum/validate'
 import { checkGenerationLimit } from '@/lib/generation/limit'
 import { prisma } from '@/lib/db/prisma'
+
+const VALID_LESSON_TYPES = ['new_knowledge', 'reflection', 'methodology', 'developmental_control', 'combined'] as const
+const VALID_LESSON_FORMS = ['traditional', 'practical', 'seminar', 'game', 'project', 'lecture', 'excursion', 'test_lesson'] as const
+const VALID_DURATIONS = [40, 45, 90] as const
+const VALID_POSITIONS = ['intro', 'main', 'final'] as const
+
+type LessonType = (typeof VALID_LESSON_TYPES)[number]
+type LessonForm = (typeof VALID_LESSON_FORMS)[number]
+type LessonDuration = (typeof VALID_DURATIONS)[number]
+type LessonPosition = (typeof VALID_POSITIONS)[number]
 
 interface GenerateBody {
   subject?: unknown
   grade?: unknown
   topic?: unknown
-  questionTypes?: unknown
-  questionCount?: unknown
-  questionCountPerType?: unknown
+  lessonType?: unknown
+  lessonForm?: unknown
+  lessonDuration?: unknown
+  lessonPosition?: unknown
   examFormat?: unknown
   textbookName?: unknown
+  textbookFileUrl?: unknown
   extraInstructions?: unknown
   userId?: unknown
 }
@@ -36,20 +47,22 @@ function validate(body: GenerateBody): ValidationError[] {
   if (!body.topic || typeof body.topic !== 'string' || !body.topic.trim()) {
     errors.push({ field: 'topic', message: 'topic is required' })
   }
-  if (!Array.isArray(body.questionTypes) || body.questionTypes.length === 0) {
-    errors.push({ field: 'questionTypes', message: 'questionTypes must be a non-empty array' })
+  if (!body.lessonType || !VALID_LESSON_TYPES.includes(body.lessonType as LessonType)) {
+    errors.push({ field: 'lessonType', message: `lessonType must be one of: ${VALID_LESSON_TYPES.join(', ')}` })
   }
-  if (
-    body.questionCount === undefined ||
-    body.questionCount === null ||
-    typeof body.questionCount !== 'number' ||
-    !Number.isInteger(body.questionCount) ||
-    (body.questionCount as number) < 1
-  ) {
-    errors.push({ field: 'questionCount', message: 'questionCount must be a positive integer' })
+  if (!body.lessonDuration || !VALID_DURATIONS.includes(body.lessonDuration as LessonDuration)) {
+    errors.push({ field: 'lessonDuration', message: `lessonDuration must be one of: ${VALID_DURATIONS.join(', ')}` })
   }
 
   return errors
+}
+
+/** Infer MIME type from a URL's file extension. */
+function mimeFromUrl(url: string): string {
+  const ext = url.split('?')[0].split('.').pop()?.toLowerCase()
+  if (ext === 'pdf') return 'application/pdf'
+  if (ext === 'docx') return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  return 'application/octet-stream'
 }
 
 export async function POST(req: NextRequest) {
@@ -65,20 +78,19 @@ export async function POST(req: NextRequest) {
     return Response.json({ errors }, { status: 422 })
   }
 
-  const subject = (body.subject as string).trim()
-  const grade = body.grade as number
-  const topic = (body.topic as string).trim()
-  const questionTypes = body.questionTypes as string[]
-  const questionCount = body.questionCount as number
-  const questionCountPerType =
-    body.questionCountPerType &&
-    typeof body.questionCountPerType === 'object' &&
-    !Array.isArray(body.questionCountPerType)
-      ? (body.questionCountPerType as Record<string, number>)
-      : undefined
-  const examFormat = typeof body.examFormat === 'string' ? body.examFormat : null
-  const textbookName = typeof body.textbookName === 'string' ? body.textbookName.trim() || null : null
-  const extraInstructions = typeof body.extraInstructions === 'string' ? body.extraInstructions.trim() || null : null
+  const subject         = (body.subject as string).trim()
+  const grade           = body.grade as number
+  const topic           = (body.topic as string).trim()
+  const lessonType      = body.lessonType as LessonType
+  const lessonDuration  = body.lessonDuration as LessonDuration
+  const lessonForm      = VALID_LESSON_FORMS.includes(body.lessonForm as LessonForm) ? (body.lessonForm as LessonForm) : undefined
+  const lessonPosition  = VALID_POSITIONS.includes(body.lessonPosition as LessonPosition) ? (body.lessonPosition as LessonPosition) : undefined
+  const examFormat      = typeof body.examFormat === 'string' ? body.examFormat : null
+  const textbookName    = typeof body.textbookName === 'string' ? body.textbookName.trim() || null : null
+  const textbookFileUrl = typeof body.textbookFileUrl === 'string' ? body.textbookFileUrl.trim() || null : null
+  const extraInstructions = typeof body.extraInstructions === 'string'
+    ? body.extraInstructions.trim().slice(0, 500) || null
+    : null
   const userId = typeof body.userId === 'string' ? body.userId : null
 
   // ── Generation limit ─────────────────────────────────────────────────────
@@ -90,41 +102,51 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ── Curriculum validation (before DB record / LLM call) ──────────────────
-  const curriculumCheck = await validateCurriculumTopic(subject, grade, topic)
-  if (!curriculumCheck.valid) {
-    return Response.json(
-      { error: 'topic_invalid', message: curriculumCheck.reason },
-      { status: 422 },
-    )
-  }
-
-  // Create generation record upfront
   const generation = await prisma.generation.create({
     data: {
       userId,
-      featureType: 'quiz',
+      featureType: 'lesson_plan',
       subject,
       grade,
       topic,
       examFormat,
-      questionTypes,
-      questionCount,
       textbookName,
+      textbookFileUrl,
       extraInstructions,
+      questionTypes: [],
+      lessonType,
+      lessonForm: lessonForm ?? null,
+      lessonDuration,
+      lessonPosition: lessonPosition ?? null,
     },
   })
 
-  const prompt = buildQuizPrompt({ subject, grade, topic, examFormat, questionTypes, questionCount, questionCountPerType, textbookName, extraInstructions })
-  const llm = getLLMClient()
+  const { systemPrompt, userPrompt } = buildLessonPlanPrompt({
+    subject,
+    grade,
+    topic,
+    lessonType,
+    lessonForm,
+    lessonDuration,
+    lessonPosition,
+    examFormat,
+    textbookName,
+    extraInstructions,
+    hasFile: textbookFileUrl !== null,
+  })
 
+  const llm = getLLMClient()
   const encoder = new TextEncoder()
   let resultText = ''
 
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const { stream: llmStream, usage } = await llm.generate(prompt, QUIZ_SYSTEM_PROMPT)
+        // If a file URL is provided, pass the document directly to the LLM.
+        const { stream: llmStream, usage } = textbookFileUrl
+          ? await llm.generateWithFile(userPrompt, systemPrompt, textbookFileUrl, mimeFromUrl(textbookFileUrl))
+          : await llm.generate(userPrompt, systemPrompt)
+
         const reader = llmStream.getReader()
         const decoder = new TextDecoder()
 
@@ -135,20 +157,16 @@ export async function POST(req: NextRequest) {
           const chunk = decoder.decode(value, { stream: true })
           resultText += chunk
 
-          // SSE format
-          const sseChunk = `data: ${JSON.stringify({ text: chunk })}\n\n`
-          controller.enqueue(encoder.encode(sseChunk))
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`))
         }
 
-        // Log raw response so we can inspect what the LLM actually returned
-        console.log('[generate] raw LLM response (%d chars):\n%s', resultText.length, resultText.slice(0, 1000))
+        console.log('[lesson-plan/generate] raw LLM response (%d chars):\n%s', resultText.length, resultText.slice(0, 1000))
 
-        // Persist result — extract JSON even if wrapped in markdown fences
         let resultJson: unknown = null
         try {
           resultJson = extractJson(resultText)
         } catch (parseErr) {
-          console.error('[generate] JSON extraction failed:', parseErr)
+          console.error('[lesson-plan/generate] JSON extraction failed:', parseErr)
         }
 
         const tokenUsage = await usage
@@ -163,7 +181,6 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        // Send generation id so the client can use it for feedback/tracking
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, generationId: generation.id })}\n\n`))
         controller.close()
       } catch (err) {

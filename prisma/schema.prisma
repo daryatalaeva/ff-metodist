@@ -28,6 +28,22 @@ model Generation {
   wasDownloaded     Boolean  @default(false)
   wasRegenerated    Boolean  @default(false)
   createdAt         DateTime @default(now())
+
+  // ── Lesson plan fields ──────────────────────────────────────────
+  // lesson_type: тип урока по ФГОС
+  //   'new_knowledge' | 'reflection' | 'methodology'
+  //   'developmental_control' | 'combined'
+  lessonType        String?
+  // lesson_form: форма проведения
+  //   'traditional' | 'practical' | 'seminar' | 'game'
+  //   'project' | 'lecture' | 'excursion' | 'test_lesson'
+  lessonForm        String?
+  // lesson_duration: продолжительность в минутах (40 | 45 | 90)
+  lessonDuration    Int?
+  // lesson_position: место в теме ('intro' | 'main' | 'final')
+  lessonPosition    String?
+  // learning_goals: опциональные цели от учителя
+  learningGoals     String?
 }
 
 model SubscriptionRequest {

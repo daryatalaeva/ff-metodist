@@ -7,20 +7,25 @@ export async function GET(
   const generation = await prisma.generation.findUnique({
     where: { id: params.id },
     select: {
-      id: true,
-      subject: true,
-      grade: true,
-      topic: true,
-      examFormat: true,
+      id:            true,
+      featureType:   true,
+      subject:       true,
+      grade:         true,
+      topic:         true,
+      examFormat:    true,
       questionCount: true,
       questionTypes: true,
-      resultJson: true,
-      feedback: true,
-      createdAt: true,
+      lessonType:    true,
+      lessonForm:    true,
+      lessonDuration:true,
+      resultJson:    true,
+      resultText:    true,
+      feedback:      true,
+      createdAt:     true,
     },
   })
 
-  if (!generation || !generation.resultJson) {
+  if (!generation) {
     return Response.json({ error: 'Not found' }, { status: 404 })
   }
 
