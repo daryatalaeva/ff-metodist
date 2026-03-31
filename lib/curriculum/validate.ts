@@ -72,19 +72,7 @@ export async function validateCurriculumTopic(
       }
     }
 
-    const isYes =
-      /^да\b/i.test(response) ||
-      /^yes\b/i.test(response)
-
-    if (!isYes) {
-      // LLM responded with something unexpected — log and block to be safe
-      console.warn('[curriculum] unexpected validation response, blocking:', JSON.stringify(raw))
-      return {
-        valid: false,
-        reason: `Тема «${topic}» не соответствует школьной программе РФ по предмету «${subjectInfo.canonical}».`,
-      }
-    }
-
+    // If not explicitly "нет" — allow through (fail-open for ambiguous responses)
     return { valid: true }
   } catch (err) {
     // Если сам вызов валидации упал — не блокируем генерацию
