@@ -41,7 +41,12 @@ export async function validateCurriculumTopic(
 
   try {
     const llm = getLLMClient()
-    const response = (await llm.text(prompt, VALIDATION_SYSTEM)).trim()
+    const raw = (await llm.text(prompt, VALIDATION_SYSTEM)).trim()
+
+    // Strip markdown bold/italic markers that Claude sometimes adds
+    const response = raw.replace(/\*+/g, '').trim()
+
+    console.log('[curriculum] validation raw response:', JSON.stringify(raw))
 
     const isNo =
       /^нет\b/i.test(response) ||
@@ -57,6 +62,19 @@ export async function validateCurriculumTopic(
         reason:
           reason ||
           `Тема «${topic}» не соответствует школьной программе РФ по предмету «${subjectInfo.canonical}».`,
+      }
+    }
+
+    const isYes =
+      /^да\b/i.test(response) ||
+      /^yes\b/i.test(response)
+
+    if (!isYes) {
+      // LLM responded with something unexpected — log and block to be safe
+      console.warn('[curriculum] unexpected validation response, blocking:', JSON.stringify(raw))
+      return {
+        valid: false,
+        reason: `Тема «${topic}» не соответствует школьной программе РФ по предмету «${subjectInfo.canonical}».`,
       }
     }
 
