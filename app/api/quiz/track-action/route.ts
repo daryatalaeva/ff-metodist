@@ -1,13 +1,14 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 
-const VALID_ACTIONS = ['copied', 'downloaded', 'regenerated'] as const
+const VALID_ACTIONS = ['copied', 'downloaded', 'regenerated', 'presented'] as const
 type Action = (typeof VALID_ACTIONS)[number]
 
-const ACTION_FIELD: Record<Action, 'wasCopied' | 'wasDownloaded' | 'wasRegenerated'> = {
+const ACTION_FIELD: Record<Action, 'wasCopied' | 'wasDownloaded' | 'wasRegenerated' | 'wasPresented'> = {
   copied: 'wasCopied',
   downloaded: 'wasDownloaded',
   regenerated: 'wasRegenerated',
+  presented: 'wasPresented',
 }
 
 export async function POST(req: NextRequest) {
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     const updated = await prisma.generation.update({
       where: { id: generationId },
       data: { [field]: true },
-      select: { id: true, wasCopied: true, wasDownloaded: true, wasRegenerated: true },
+      select: { id: true, wasCopied: true, wasDownloaded: true, wasRegenerated: true, wasPresented: true },
     })
     return Response.json(updated)
   } catch (err: unknown) {

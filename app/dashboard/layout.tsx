@@ -18,7 +18,11 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const isTools =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/quiz");
+  const isPresent = pathname.startsWith("/dashboard/quiz/present");
 
+  if (isPresent) {
+    return <>{children}</>;
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#F7F7FC" }}>

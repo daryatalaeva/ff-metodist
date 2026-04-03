@@ -48,6 +48,7 @@ export interface Question {
   options?: string[];
   answer: string | string[];
   explanation: string;
+  image_hint?: string;
 }
 
 export interface QuizResult {

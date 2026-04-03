@@ -16,6 +16,7 @@ interface GenerateBody {
   textbookName?: unknown
   extraInstructions?: unknown
   userId?: unknown
+  confirmed?: unknown
 }
 
 interface ValidationError {
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
   const textbookName = typeof body.textbookName === 'string' ? body.textbookName.trim() || null : null
   const extraInstructions = typeof body.extraInstructions === 'string' ? body.extraInstructions.trim() || null : null
   const userId = typeof body.userId === 'string' ? body.userId : null
+  const confirmed = body.confirmed === true
 
   // ── Generation limit ─────────────────────────────────────────────────────
   const limitCheck = await checkGenerationLimit(userId)
@@ -89,12 +91,28 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Curriculum validation (before DB record / LLM call) ──────────────────
-  const curriculumCheck = await validateCurriculumTopic(subject, grade, topic)
+  const curriculumCheck = await validateCurriculumTopic(subject, grade, topic, { skipLLM: confirmed })
   if (!curriculumCheck.valid) {
     return Response.json(
-      { error: 'topic_invalid', message: curriculumCheck.reason },
+      { errors: [{ field: 'topic', message: curriculumCheck.reason }] },
       { status: 422 },
     )
+  }
+  if (!confirmed && curriculumCheck.warning) {
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'warning', message: curriculumCheck.warning })}\n\n`))
+        controller.close()
+      },
+    })
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    })
   }
 
   // Create generation record upfront

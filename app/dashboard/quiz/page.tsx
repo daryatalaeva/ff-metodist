@@ -101,7 +101,9 @@ export default function QuizPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [dragOver, setDragOver] = useState(false);
+  const [topicWarning, setTopicWarning] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const topicInputRef = useRef<HTMLInputElement>(null);
 
   // Load generation count from localStorage on mount
   useEffect(() => {
@@ -172,7 +174,7 @@ export default function QuizPage() {
   }
 
   /* ─── Submit ─── */
-  async function handleSubmit() {
+  async function handleSubmit(confirmed = false) {
     if (!validate()) return;
 
     if (usedGenerations >= TOTAL_GENERATIONS) {
@@ -183,6 +185,7 @@ export default function QuizPage() {
     setMode("generating");
     setResult(null);
     setServerError(null);
+    setTopicWarning(null);
     setGenerationId(null);
 
     const ctrl = new AbortController();
@@ -204,6 +207,7 @@ export default function QuizPage() {
           ...(form.questionTypes.length > 1 && { questionCountPerType: form.questionCountPerType }),
           textbookName: form.textbookName.trim() || null,
           extraInstructions: form.extraInstructions.trim() || null,
+          ...(confirmed && { confirmed: true }),
         }),
       });
 
@@ -225,8 +229,9 @@ export default function QuizPage() {
       const decoder = new TextDecoder();
       let buffer = "";
       let fullText = "";
+      let stopped = false;
 
-      while (true) {
+      while (!stopped) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
@@ -239,12 +244,20 @@ export default function QuizPage() {
           if (!raw) continue;
           try {
             const data = JSON.parse(raw) as {
+              type?: string;
+              message?: string;
               text?: string;
               done?: boolean;
               generationId?: string;
               error?: string;
             };
 
+            if (data.type === "warning") {
+              setTopicWarning(data.message ?? "Тема может не соответствовать классу.");
+              setMode("form");
+              stopped = true;
+              break;
+            }
             if (data.text) {
               fullText += data.text;
             }
@@ -334,6 +347,31 @@ export default function QuizPage() {
       {showLimitModal && (
         <LimitModal onClose={() => setShowLimitModal(false)} />
       )}
+      {topicWarning && (
+        <div
+          className="rounded-[10px] px-4 py-3 mb-[18px] text-sm text-[#7A5700]"
+          style={{ background: "#FFF8DC" }}
+        >
+          <p className="m-0 mb-3 leading-[1.5]">{topicWarning}</p>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                setTopicWarning(null);
+                setTimeout(() => topicInputRef.current?.focus(), 0);
+              }}
+              className="rounded-[8px] px-[14px] py-[6px] border-[1.5px] border-[#C49A00] bg-white text-[#7A5700] text-[13px] font-semibold cursor-pointer font-[inherit]"
+            >
+              Изменить тему
+            </button>
+            <button
+              onClick={() => handleSubmit(true)}
+              className="rounded-[8px] px-[14px] py-[6px] border-[1.5px] border-[#C49A00] bg-[#C49A00] text-white text-[13px] font-semibold cursor-pointer font-[inherit]"
+            >
+              Всё равно сгенерировать
+            </button>
+          </div>
+        </div>
+      )}
       {serverError && (
         <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] px-[18px] py-3 mb-[18px] text-sm text-[#DC2626]">
           {serverError}
@@ -387,6 +425,7 @@ export default function QuizPage() {
           {/* Topic */}
           <Field label="Тема" required error={fieldErrors.topic}>
             <input
+              ref={topicInputRef}
               className="fox-input"
               type="text"
               placeholder="Например: Квадратные уравнения"
@@ -525,7 +564,7 @@ export default function QuizPage() {
 
           {/* CTA */}
           <button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             className="fox-btn-primary w-full justify-center mt-2"
             style={{ borderRadius: 14 }}
           >

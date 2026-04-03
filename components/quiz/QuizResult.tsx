@@ -1,7 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import type { QuizResult, Question } from "@/lib/types";
+
+function renderWithFormulas(text: string): string {
+  // Сначала блочные формулы $$ ... $$
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, formula) => {
+    try {
+      return katex.renderToString(formula, { displayMode: true, throwOnError: false });
+    } catch {
+      return formula;
+    }
+  });
+  // Затем инлайн $ ... $
+  text = text.replace(/\$(.+?)\$/g, (_, formula) => {
+    try {
+      return katex.renderToString(formula, { displayMode: false, throwOnError: false });
+    } catch {
+      return formula;
+    }
+  });
+  return text;
+}
 
 const CYRILLIC = ["А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"];
 
@@ -62,6 +84,15 @@ export default function QuizResultView({ result, generationId, onRegenerate }: P
     }).catch(() => {});
   }
 
+  async function handlePresent() {
+    window.open(`/dashboard/quiz/present/${generationId}`, "_blank");
+    await fetch("/api/quiz/track-action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ generationId, action: "presented" }),
+    }).catch(() => {});
+  }
+
   async function handleRegenerate() {
     await fetch("/api/quiz/track-action", {
       method: "POST",
@@ -73,6 +104,16 @@ export default function QuizResultView({ result, generationId, onRegenerate }: P
 
   return (
     <div>
+      {/* ── Disclaimer banner ── */}
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#FFF8DC", borderRadius: 10, padding: "12px 16px", marginBottom: 24 }}>
+        <div style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "#2B7FFF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ color: "#fff", fontSize: 12, fontWeight: 700, lineHeight: 1 }}>i</span>
+        </div>
+        <p style={{ margin: 0, fontSize: 13, color: "#7A6000", lineHeight: 1.5 }}>
+          Рекомендуем проверить правильность ответов и пояснений перед использованием — особенно в заданиях на пунктуацию и формулы.
+        </p>
+      </div>
+
       {/* ── Title + meta ── */}
       <div style={{ marginBottom: 28 }}>
         <h2 style={{ margin: "0 0 14px", fontSize: 22, fontWeight: 900, color: "#111", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
@@ -125,6 +166,25 @@ export default function QuizResultView({ result, generationId, onRegenerate }: P
         <ActionBtn onClick={handleRegenerate}>Сгенерировать ещё раз →</ActionBtn>
         <ActionBtn onClick={handleCopy}>{copyLabel}</ActionBtn>
         <ActionBtn onClick={handleDownload}>{dlLabel} ↓</ActionBtn>
+        <button
+          onClick={handlePresent}
+          style={{
+            borderRadius: 20,
+            padding: "8px 16px",
+            border: "1.5px solid #2B7FFF",
+            background: "white",
+            color: "#2B7FFF",
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          Показать классу
+        </button>
       </div>
     </div>
   );
@@ -294,9 +354,8 @@ function QuestionCard({ question }: { question: Question }) {
           lineHeight: 1.55,
           color: "#111",
         }}
-      >
-        {question.text}
-      </p>
+        dangerouslySetInnerHTML={{ __html: renderWithFormulas(question.text) }}
+      />
 
       {/* Options — single/multiple choice */}
       {question.options && question.options.length > 0 && (
@@ -344,9 +403,8 @@ function QuestionCard({ question }: { question: Question }) {
                     color: correct ? "#111" : "#444",
                     fontWeight: correct ? 700 : 400,
                   }}
-                >
-                  {opt}
-                </span>
+                  dangerouslySetInnerHTML={{ __html: renderWithFormulas(opt) }}
+                />
               </div>
             );
           })}
@@ -405,11 +463,14 @@ function QuestionCard({ question }: { question: Question }) {
           </span>
           <span
             style={{ fontSize: 14, marginLeft: 8, color: "#111", fontWeight: 600 }}
-          >
-            {Array.isArray(question.answer)
-              ? question.answer.join(", ")
-              : question.answer}
-          </span>
+            dangerouslySetInnerHTML={{
+              __html: renderWithFormulas(
+                Array.isArray(question.answer)
+                  ? question.answer.join(", ")
+                  : question.answer
+              ),
+            }}
+          />
         </div>
         {question.explanation && (
           <div>
@@ -431,9 +492,8 @@ function QuestionCard({ question }: { question: Question }) {
                 color: "#555",
                 lineHeight: 1.55,
               }}
-            >
-              {question.explanation}
-            </span>
+              dangerouslySetInnerHTML={{ __html: renderWithFormulas(question.explanation) }}
+            />
           </div>
         )}
       </div>

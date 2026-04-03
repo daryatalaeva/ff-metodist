@@ -27,6 +27,7 @@ model Generation {
   wasCopied         Boolean  @default(false)
   wasDownloaded     Boolean  @default(false)
   wasRegenerated    Boolean  @default(false)
+  wasPresented      Boolean? @default(false)
   createdAt         DateTime @default(now())
 
   // ── Lesson plan fields ──────────────────────────────────────────
