@@ -50,13 +50,6 @@ const SECONDARY_SUBJECTS = [
   "Математика",
 ];
 
-const EXAM_FORMATS = [
-  { value: "ФГОС", label: "ФГОС" },
-  { value: "ОГЭ", label: "ОГЭ" },
-  { value: "ЕГЭ", label: "ЕГЭ" },
-  { value: "ВПР", label: "ВПР" },
-  { value: "none", label: "Без привязки" },
-];
 
 const QUESTION_TYPES = [
   { value: "single_choice", label: "С выбором одного ответа" },
@@ -75,7 +68,6 @@ interface FormState {
   subject: string;
   grade: string;
   topic: string;
-  examFormat: string;
   questionTypes: string[];
   /** Single-type mode: total count. Multi-type mode: ignored (use questionCountPerType). */
   questionCount: number;
@@ -94,7 +86,6 @@ export default function QuizPage() {
     subject: "",
     grade: "",
     topic: "",
-    examFormat: "ФГОС",
     questionTypes: ["single_choice"],
     questionCount: 10,
     questionCountPerType: { single_choice: 10 },
@@ -147,7 +138,6 @@ export default function QuizPage() {
 
       const nextPerType = { ...prev.questionCountPerType };
       if (!has) {
-        // Adding: default to 3, or reuse existing value
         nextPerType[type] = nextPerType[type] ?? 3;
       } else {
         delete nextPerType[type];
@@ -185,7 +175,6 @@ export default function QuizPage() {
   async function handleSubmit() {
     if (!validate()) return;
 
-    // Check generation limit before calling the API
     if (usedGenerations >= TOTAL_GENERATIONS) {
       setShowLimitModal(true);
       return;
@@ -208,7 +197,6 @@ export default function QuizPage() {
           subject: form.subject,
           grade: parseInt(form.grade),
           topic: form.topic.trim(),
-          examFormat: form.examFormat === "none" ? null : form.examFormat,
           questionTypes: form.questionTypes,
           questionCount: form.questionTypes.length === 1
             ? form.questionCount
@@ -264,7 +252,6 @@ export default function QuizPage() {
               setGenerationId(data.generationId);
               try {
                 const parsed = extractJson(fullText) as Record<string, unknown>;
-                // Model signalled that the topic is outside the school curriculum
                 if (parsed.error === "topic_invalid") {
                   const msg = typeof parsed.message === "string"
                     ? parsed.message
@@ -274,7 +261,6 @@ export default function QuizPage() {
                 } else {
                   setResult(parsed as unknown as QuizResult);
                   setMode("result");
-                  // Increment localStorage counter on successful generation
                   const next = usedGenerations + 1;
                   localStorage.setItem(LS_KEY, String(next));
                   setUsedGenerations(next);
@@ -282,9 +268,7 @@ export default function QuizPage() {
               } catch (parseErr) {
                 console.error("[quiz] JSON parse failed. Raw fullText:", fullText);
                 console.error("[quiz] parse error:", parseErr);
-                setServerError(
-                  "Не удалось разобрать ответ модели. Попробуйте ещё раз."
-                );
+                setServerError("Не удалось разобрать ответ модели. Попробуйте ещё раз.");
                 setMode("form");
               }
             }
@@ -310,31 +294,18 @@ export default function QuizPage() {
     setGenerationId(null);
   }
 
-  const vprWarning =
-    form.examFormat === "ВПР" && !!form.grade && parseInt(form.grade) >= 9;
-
   /* ─── Generating screen ─── */
   if (mode === "generating") {
     return (
       <div>
         <BackLink />
-        <div
-          style={{
-            background: "white",
-            borderRadius: 20,
-            padding: "40px 32px",
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 56, marginBottom: 20, display: "inline-block", animation: "hourglass 2s ease-in-out infinite" }}>
-              ⏳
-            </div>
-            <h2 style={{ margin: "0 0 10px", fontSize: 20, fontWeight: 900, letterSpacing: "-0.02em" }}>
+        <div className="bg-white rounded-[20px] py-10 px-8">
+          <div className="text-center">
+            <div className="text-[56px] mb-5 inline-block hourglass">⏳</div>
+            <h2 className="m-0 mb-[10px] text-[20px] font-black tracking-[-0.02em]">
               Генерируем тест…
             </h2>
-            <p style={{ margin: 0, fontSize: 14, color: "#999" }}>
-              Обычно занимает 20–40 секунд
-            </p>
+            <p className="m-0 text-sm text-[#999]">Обычно занимает 20–40 секунд</p>
           </div>
         </div>
       </div>
@@ -346,13 +317,7 @@ export default function QuizPage() {
     return (
       <div>
         <BackLink />
-        <div
-          style={{
-            background: "white",
-            borderRadius: 20,
-            padding: "32px",
-          }}
-        >
+        <div className="bg-white rounded-[20px] p-8">
           <QuizResultView
             result={result}
             generationId={generationId}
@@ -370,17 +335,7 @@ export default function QuizPage() {
         <LimitModal onClose={() => setShowLimitModal(false)} />
       )}
       {serverError && (
-        <div
-          style={{
-            background: "#FEF2F2",
-            border: "1px solid #FECACA",
-            borderRadius: 10,
-            padding: "12px 18px",
-            marginBottom: 18,
-            fontSize: 14,
-            color: "#DC2626",
-          }}
-        >
+        <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-[10px] px-[18px] py-3 mb-[18px] text-sm text-[#DC2626]">
           {serverError}
         </div>
       )}
@@ -389,18 +344,8 @@ export default function QuizPage() {
 
       <div className="fox-form-grid">
         {/* ══ LEFT COLUMN ══ */}
-        <div
-          style={{ background: "white", borderRadius: 20, padding: "28px 30px" }}
-        >
-          <h2
-            style={{
-              margin: "0 0 24px",
-              fontSize: 17,
-              fontWeight: 900,
-              color: "#111",
-              letterSpacing: "-0.02em",
-            }}
-          >
+        <div className="bg-white rounded-[20px] px-[30px] py-7">
+          <h2 className="m-0 mb-6 text-[17px] font-black text-[#111] tracking-[-0.02em]">
             Параметры теста
           </h2>
 
@@ -412,13 +357,9 @@ export default function QuizPage() {
                 value={form.grade}
                 onChange={(e) => setField("grade", e.target.value)}
               >
-                <option value="" disabled>
-                  Выберите класс
-                </option>
+                <option value="" disabled>Выберите класс</option>
                 {Array.from({ length: 11 }, (_, i) => i + 1).map((g) => (
-                  <option key={g} value={String(g)}>
-                    {g} класс
-                  </option>
+                  <option key={g} value={String(g)}>{g} класс</option>
                 ))}
               </select>
             </div>
@@ -437,9 +378,7 @@ export default function QuizPage() {
                   {form.grade ? "Выберите предмет" : "Сначала выберите класс"}
                 </option>
                 {availableSubjects.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
@@ -455,96 +394,29 @@ export default function QuizPage() {
               onChange={(e) => setField("topic", e.target.value)}
               maxLength={200}
             />
-            <div
-              style={{
-                textAlign: "right",
-                fontSize: 11,
-                color: "#bbb",
-                marginTop: 3,
-              }}
-            >
+            <div className="text-right text-[11px] text-[#bbb] mt-[3px]">
               {form.topic.length}/200
             </div>
           </Field>
 
-          {/* Format */}
-          <Field label="Формат" error={undefined}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {EXAM_FORMATS.map((fmt) => {
-                const active = form.examFormat === fmt.value;
-                return (
-                  <button
-                    key={fmt.value}
-                    onClick={() => setField("examFormat", fmt.value)}
-                    style={{
-                      borderRadius: 20,
-                      padding: "7px 16px",
-                      border: `1.5px solid ${active ? "#F96B1B" : "rgba(0,0,0,0.15)"}`,
-                      background: active ? "#FEF0E6" : "white",
-                      color: active ? "#F96B1B" : "#444",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {fmt.label}
-                  </button>
-                );
-              })}
-            </div>
-            {vprWarning && (
-              <div
-                style={{
-                  background: "#FFF8DC",
-                  borderRadius: 8,
-                  padding: "10px 14px",
-                  marginTop: 10,
-                  fontSize: 13,
-                  color: "#92400E",
-                  lineHeight: 1.45,
-                }}
-              >
-                ⚠️ ВПР обычно проводятся для 4–8 классов. Уточните
-                необходимость для выбранного класса.
-              </div>
-            )}
-          </Field>
-
           {/* Question types */}
-          <Field
-            label="Типы вопросов"
-            required
-            error={fieldErrors.questionTypes}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+          <Field label="Типы вопросов" required error={fieldErrors.questionTypes}>
+            <div className="flex flex-col gap-[11px]">
               {QUESTION_TYPES.map((qt) => {
                 const checked = form.questionTypes.includes(qt.value);
                 return (
                   <label
                     key={qt.value}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      cursor: "pointer",
-                      userSelect: "none",
-                    }}
+                    className="flex items-center gap-[10px] cursor-pointer select-none"
                   >
                     <div
                       onClick={() => toggleQType(qt.value)}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius: 5,
-                        border: `1.5px solid ${checked ? "#F96B1B" : "rgba(0,0,0,0.25)"}`,
-                        background: checked ? "#F96B1B" : "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        cursor: "pointer",
-                      }}
+                      className={[
+                        "w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center flex-shrink-0 cursor-pointer",
+                        checked
+                          ? "border-fox-orange bg-fox-orange"
+                          : "border-black/25 bg-white",
+                      ].join(" ")}
                     >
                       {checked && (
                         <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
@@ -552,7 +424,7 @@ export default function QuizPage() {
                         </svg>
                       )}
                     </div>
-                    <span onClick={() => toggleQType(qt.value)} style={{ fontSize: 14, color: "#333" }}>
+                    <span onClick={() => toggleQType(qt.value)} className="text-sm text-[#333]">
                       {qt.label}
                     </span>
                   </label>
@@ -563,8 +435,8 @@ export default function QuizPage() {
 
           {/* Question count — single type: pill buttons; multi-type: per-type steppers */}
           {form.questionTypes.length <= 1 ? (
-            <Field label="Количество вопросов" error={undefined}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Field label="Количество вопросов">
+              <div className="flex gap-2 flex-wrap">
                 {QUESTION_COUNTS.map((cnt) => {
                   const active = form.questionCount === cnt;
                   return (
@@ -579,17 +451,12 @@ export default function QuizPage() {
                             : p.questionCountPerType,
                         }))
                       }
-                      style={{
-                        borderRadius: 20,
-                        padding: "7px 22px",
-                        border: `1.5px solid ${active ? "#F96B1B" : "rgba(0,0,0,0.15)"}`,
-                        background: active ? "#FEF0E6" : "white",
-                        color: active ? "#F96B1B" : "#444",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                      }}
+                      className={[
+                        "rounded-[20px] px-[22px] py-[7px] border-[1.5px] text-sm font-semibold cursor-pointer font-[inherit] transition-colors",
+                        active
+                          ? "border-fox-orange bg-fox-orange-light text-fox-orange"
+                          : "border-black/15 bg-white text-[#444]",
+                      ].join(" ")}
                     >
                       {cnt}
                     </button>
@@ -598,14 +465,8 @@ export default function QuizPage() {
               </div>
             </Field>
           ) : (
-            <Field label="Количество вопросов по типам" error={undefined}>
-              <div
-                style={{
-                  background: "#F7F7FC",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
-              >
+            <Field label="Количество вопросов по типам">
+              <div className="bg-[#F7F7FC] rounded-xl overflow-hidden">
                 {form.questionTypes.map((type, i) => {
                   const label = QUESTION_TYPES.find((qt) => qt.value === type)?.label ?? type;
                   const count = form.questionCountPerType[type] ?? 3;
@@ -613,50 +474,37 @@ export default function QuizPage() {
                   return (
                     <div
                       key={type}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "11px 14px",
-                        borderBottom: isLast ? "none" : "1px solid rgba(0,0,0,0.07)",
-                      }}
+                      className={[
+                        "flex items-center justify-between px-[14px] py-[11px]",
+                        isLast ? "" : "border-b border-black/[0.07]",
+                      ].join(" ")}
                     >
-                      <span style={{ fontSize: 13, color: "#333", lineHeight: 1.3, flex: 1 }}>
-                        {label}
-                      </span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      <span className="text-[13px] text-[#333] leading-[1.3] flex-1">{label}</span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           onClick={() => adjustTypeCount(type, -1)}
                           disabled={count <= 1}
-                          style={{
-                            width: 28, height: 28, borderRadius: "50%",
-                            border: "1.5px solid rgba(0,0,0,0.15)",
-                            background: count <= 1 ? "#F0F0F0" : "white",
-                            color: count <= 1 ? "#CCC" : "#333",
-                            fontSize: 16, lineHeight: 1,
-                            cursor: count <= 1 ? "not-allowed" : "pointer",
-                            fontFamily: "inherit", fontWeight: 700,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                          }}
+                          className={[
+                            "w-7 h-7 rounded-full border-[1.5px] text-base font-bold flex items-center justify-center font-[inherit] transition-colors",
+                            count <= 1
+                              ? "border-black/15 bg-[#F0F0F0] text-[#CCC] cursor-not-allowed"
+                              : "border-black/15 bg-white text-[#333] cursor-pointer",
+                          ].join(" ")}
                         >
                           −
                         </button>
-                        <span style={{ minWidth: 24, textAlign: "center", fontSize: 15, fontWeight: 700, color: "#111" }}>
+                        <span className="min-w-6 text-center text-[15px] font-bold text-[#111]">
                           {count}
                         </span>
                         <button
                           onClick={() => adjustTypeCount(type, 1)}
                           disabled={count >= 20}
-                          style={{
-                            width: 28, height: 28, borderRadius: "50%",
-                            border: "1.5px solid rgba(0,0,0,0.15)",
-                            background: count >= 20 ? "#F0F0F0" : "white",
-                            color: count >= 20 ? "#CCC" : "#333",
-                            fontSize: 16, lineHeight: 1,
-                            cursor: count >= 20 ? "not-allowed" : "pointer",
-                            fontFamily: "inherit", fontWeight: 700,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                          }}
+                          className={[
+                            "w-7 h-7 rounded-full border-[1.5px] text-base font-bold flex items-center justify-center font-[inherit] transition-colors",
+                            count >= 20
+                              ? "border-black/15 bg-[#F0F0F0] text-[#CCC] cursor-not-allowed"
+                              : "border-black/15 bg-white text-[#333] cursor-pointer",
+                          ].join(" ")}
                         >
                           +
                         </button>
@@ -665,18 +513,9 @@ export default function QuizPage() {
                   );
                 })}
                 {/* Total row */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "10px 14px",
-                    background: "#EEEEF6",
-                    borderTop: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#555" }}>Итого</span>
-                  <span style={{ fontSize: 15, fontWeight: 900, color: "#F96B1B" }}>
+                <div className="flex justify-between items-center px-[14px] py-[10px] bg-[#EEEEF6] border-t border-black/[0.08]">
+                  <span className="text-[13px] font-bold text-[#555]">Итого</span>
+                  <span className="text-[15px] font-black text-fox-orange">
                     {form.questionTypes.reduce((s, t) => s + (form.questionCountPerType[t] ?? 3), 0)} вопросов
                   </span>
                 </div>
@@ -687,63 +526,30 @@ export default function QuizPage() {
           {/* CTA */}
           <button
             onClick={handleSubmit}
-            className="fox-btn-primary"
-            style={{ width: "100%", justifyContent: "center", marginTop: 8, borderRadius: 14 }}
+            className="fox-btn-primary w-full justify-center mt-2"
+            style={{ borderRadius: 14 }}
           >
             Сгенерировать тест →
           </button>
 
           {/* Generation counter */}
-          <div style={{ marginTop: 14 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 6,
-                fontSize: 13,
-                color: "#777",
-              }}
-            >
-              <span>
-                Генераций: {usedGenerations} / {TOTAL_GENERATIONS}
-              </span>
-              <span>
-                {TOTAL_GENERATIONS - usedGenerations} осталось
-              </span>
+          <div className="mt-[14px]">
+            <div className="flex justify-between mb-[6px] text-[13px] text-[#777]">
+              <span>Генераций: {usedGenerations} / {TOTAL_GENERATIONS}</span>
+              <span>{TOTAL_GENERATIONS - usedGenerations} осталось</span>
             </div>
-            <div
-              style={{
-                height: 4,
-                background: "#F3F4F6",
-                borderRadius: 4,
-                overflow: "hidden",
-              }}
-            >
+            <div className="h-1 bg-[#F3F4F6] rounded overflow-hidden">
               <div
-                style={{
-                  height: "100%",
-                  width: `${Math.min((usedGenerations / TOTAL_GENERATIONS) * 100, 100)}%`,
-                  background: "#F96B1B",
-                  borderRadius: 4,
-                }}
+                className="h-full bg-fox-orange rounded"
+                style={{ width: `${Math.min((usedGenerations / TOTAL_GENERATIONS) * 100, 100)}%` }}
               />
             </div>
           </div>
         </div>
 
         {/* ══ RIGHT COLUMN ══ */}
-        <div
-          style={{ background: "white", borderRadius: 20, padding: "28px 30px" }}
-        >
-          <h2
-            style={{
-              margin: "0 0 24px",
-              fontSize: 17,
-              fontWeight: 900,
-              color: "#111",
-              letterSpacing: "-0.02em",
-            }}
-          >
+        <div className="bg-white rounded-[20px] px-[30px] py-7">
+          <h2 className="m-0 mb-6 text-[17px] font-black text-[#111] tracking-[-0.02em]">
             Дополнительно
           </h2>
 
@@ -761,35 +567,19 @@ export default function QuizPage() {
           {/* File upload */}
           <Field label="Файл учебника" optional>
             <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragOver(false);
-              }}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); }}
               onClick={() => document.getElementById("file-upload")?.click()}
-              style={{
-                border: `1.5px dashed ${dragOver ? "#F96B1B" : "rgba(0,0,0,0.2)"}`,
-                borderRadius: 10,
-                padding: "22px 16px",
-                textAlign: "center",
-                cursor: "pointer",
-                background: dragOver ? "#FEF0E6" : "#FAFAFA",
-                transition: "all 0.15s",
-              }}
+              className={[
+                "border-[1.5px] border-dashed rounded-[10px] py-[22px] px-4 text-center cursor-pointer transition-all",
+                dragOver
+                  ? "border-fox-orange bg-fox-orange-light"
+                  : "border-black/20 bg-[#FAFAFA]",
+              ].join(" ")}
             >
-              <div style={{ fontSize: 22, marginBottom: 8 }}>📎</div>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#888",
-                  lineHeight: 1.55,
-                }}
-              >
+              <div className="text-[22px] mb-2">📎</div>
+              <p className="m-0 text-[13px] text-[#888] leading-[1.55]">
                 PDF или DOCX, до 10 МБ
                 <br />
                 тест будет строго по тексту
@@ -799,7 +589,7 @@ export default function QuizPage() {
               id="file-upload"
               type="file"
               accept=".pdf,.docx"
-              style={{ display: "none" }}
+              className="hidden"
             />
           </Field>
 
@@ -813,14 +603,7 @@ export default function QuizPage() {
               maxLength={500}
               rows={6}
             />
-            <div
-              style={{
-                textAlign: "right",
-                fontSize: 11,
-                color: "#bbb",
-                marginTop: 3,
-              }}
-            >
+            <div className="text-right text-[11px] text-[#bbb] mt-[3px]">
               {form.extraInstructions.length}/500
             </div>
           </Field>
@@ -834,18 +617,10 @@ export default function QuizPage() {
 
 function BackLink() {
   return (
-    <div style={{ marginBottom: 22 }}>
+    <div className="mb-[22px]">
       <Link
         href="/dashboard"
-        style={{
-          color: "#F96B1B",
-          fontSize: 14,
-          fontWeight: 600,
-          textDecoration: "none",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-        }}
+        className="text-fox-orange text-sm font-semibold no-underline inline-flex items-center gap-1"
       >
         ‹ Вернуться назад
       </Link>
@@ -867,40 +642,19 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ marginBottom: 20 }}>
-      <label
-        style={{
-          display: "block",
-          fontSize: 13,
-          fontWeight: 600,
-          marginBottom: 7,
-          color: "#222",
-        }}
-      >
+    <div className="mb-5">
+      <label className="block text-[13px] font-semibold mb-[7px] text-[#222]">
         {label}
         {required && (
-          <span style={{ color: "#F96B1B", marginLeft: 2 }}>*</span>
+          <span className="text-fox-orange ml-[2px]">*</span>
         )}
         {optional && (
-          <span
-            style={{ fontSize: 12, color: "#aaa", fontWeight: 400, marginLeft: 6 }}
-          >
-            необязательно
-          </span>
+          <span className="text-xs text-[#aaa] font-normal ml-1.5">необязательно</span>
         )}
       </label>
       {children}
       {error && (
-        <span
-          style={{
-            display: "block",
-            fontSize: 12,
-            color: "#DC2626",
-            marginTop: 5,
-          }}
-        >
-          {error}
-        </span>
+        <span className="block text-xs text-[#DC2626] mt-[5px]">{error}</span>
       )}
     </div>
   );

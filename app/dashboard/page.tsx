@@ -40,6 +40,33 @@ const TOOLS: Tool[] = [
     accentColor: "#2B7FFF",
   },
   {
+    id: "quiz-oge",
+    title: "Тест в формате ОГЭ",
+    desc: "Тест по структуре и требованиям основного государственного экзамена",
+    href: "#",
+    status: "coming_soon",
+    illustrationGradient: ["#E1F5EE", "#9FE1CB"],
+    accentColor: "#1A9B6C",
+  },
+  {
+    id: "quiz-ege",
+    title: "Тест в формате ЕГЭ",
+    desc: "Тест по структуре и требованиям единого государственного экзамена",
+    href: "#",
+    status: "coming_soon",
+    illustrationGradient: ["#EEEDFE", "#CECBF6"],
+    accentColor: "#7B2FBE",
+  },
+  {
+    id: "quiz-vpr",
+    title: "Тест в формате ВПР",
+    desc: "Тест по структуре всероссийской проверочной работы",
+    href: "#",
+    status: "coming_soon",
+    illustrationGradient: ["#FFF8DC", "#FFE99A"],
+    accentColor: "#B8860B",
+  },
+  {
     id: "characteristic",
     title: "Характеристика",
     desc: "Характеристика на ученика для ПМПК и портфолио",
@@ -95,6 +122,9 @@ function CharSvg({ color }: { color: string }) {
 
 function ToolSvg({ id, color }: { id: string; color: string }) {
   if (id === "quiz")           return <QuizSvg color={color} />;
+  if (id === "quiz-oge")       return <QuizSvg color={color} />;
+  if (id === "quiz-ege")       return <QuizSvg color={color} />;
+  if (id === "quiz-vpr")       return <QuizSvg color={color} />;
   if (id === "lesson-plan")    return <LessonPlanSvg color={color} />;
   if (id === "characteristic") return <CharSvg color={color} />;
   return null;
@@ -108,90 +138,36 @@ function ToolCard({ tool }: { tool: Tool }) {
 
   const inner = (
     <div
-      style={{
-        background: "#FFFFFF",
-        borderRadius: 14,
-        padding: "20px",
-        opacity: active ? 1 : 0.6,
-        cursor: active ? "pointer" : "default",
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "stretch",
-        gap: 16,
-        border: "2px solid transparent",
-        transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-        height: "100%",
-        boxSizing: "border-box",
-      }}
-      onMouseEnter={(e) => {
-        if (!active) return;
-        (e.currentTarget as HTMLDivElement).style.borderColor = "#F96B1B";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(249,107,27,0.12)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = "transparent";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
-      }}
+      className={[
+        "bg-white rounded-[14px] p-5 flex flex-row items-stretch gap-4 border-2 border-transparent h-full transition-[border-color,box-shadow] duration-150",
+        active
+          ? "cursor-pointer hover:border-fox-orange hover:shadow-[0_4px_16px_rgba(249,107,27,0.12)]"
+          : "opacity-60 cursor-default",
+      ].join(" ")}
     >
       {/* Left: content */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
-        {/* Coming soon badge */}
+      <div className="flex-1 flex flex-col gap-2 min-w-0">
         {!active && (
-          <span
-            style={{
-              display: "inline-block",
-              background: "#E5E7EB",
-              color: "#6B7280",
-              borderRadius: 20,
-              padding: "2px 10px",
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              alignSelf: "flex-start",
-            }}
-          >
+          <span className="inline-block bg-gray-200 text-gray-500 rounded-[20px] px-[10px] py-[2px] text-[10px] font-semibold tracking-[0.04em] uppercase self-start">
             Скоро
           </span>
         )}
 
-        <h3
-          style={{
-            margin: 0,
-            fontSize: 16,
-            fontWeight: 800,
-            color: "#1A1A1A",
-            letterSpacing: "-0.01em",
-            lineHeight: 1.25,
-          }}
-        >
+        <h3 className="m-0 text-base font-extrabold text-[#1A1A1A] tracking-[-0.01em] leading-[1.25]">
           {tool.title}
         </h3>
 
-        <p
-          style={{
-            margin: 0,
-            fontSize: 13,
-            color: "#6B7280",
-            lineHeight: 1.55,
-            flex: 1,
-          }}
-        >
+        <p className="m-0 text-[13px] text-gray-500 leading-[1.55] flex-1">
           {tool.desc}
         </p>
 
         {/* Arrow circle */}
-        <div style={{ marginTop: 4 }}>
+        <div className="mt-1">
           <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: active ? "#1A1A1A" : "#E5E7EB",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            className={[
+              "w-[30px] h-[30px] rounded-full flex items-center justify-center",
+              active ? "bg-[#1A1A1A]" : "bg-gray-200",
+            ].join(" ")}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path
@@ -206,19 +182,10 @@ function ToolCard({ tool }: { tool: Tool }) {
         </div>
       </div>
 
-      {/* Right: illustration */}
+      {/* Right: illustration — gradient is dynamic, stays as inline style */}
       <div
-        style={{
-          width: 90,
-          height: 80,
-          borderRadius: 12,
-          background: `linear-gradient(135deg, ${g0} 0%, ${g1} 100%)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          alignSelf: "flex-start",
-        }}
+        className="w-[90px] h-20 rounded-xl flex items-center justify-center flex-shrink-0 self-start"
+        style={{ background: `linear-gradient(135deg, ${g0} 0%, ${g1} 100%)` }}
       >
         <ToolSvg id={tool.id} color={active ? tool.accentColor : "#B0B0B8"} />
       </div>
@@ -227,10 +194,7 @@ function ToolCard({ tool }: { tool: Tool }) {
 
   if (active) {
     return (
-      <Link
-        href={tool.href}
-        style={{ textDecoration: "none", display: "block" }}
-      >
+      <Link href={tool.href} className="no-underline block">
         {inner}
       </Link>
     );
@@ -245,30 +209,12 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Info banner */}
-      <div
-        className="fox-banner"
-        style={{
-          background: "white",
-          borderRadius: 20,
-          padding: "24px 32px",
-          marginBottom: 24,
-          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-        }}
-      >
+      <div className="fox-banner bg-white rounded-[20px] px-8 py-6 mb-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
         <div>
-          <p
-            style={{
-              margin: "0 0 6px",
-              fontWeight: 900,
-              fontSize: 18,
-              color: "#111",
-              letterSpacing: "-0.02em",
-              lineHeight: 1.3,
-            }}
-          >
+          <p className="m-0 mb-1.5 font-black text-lg text-[#111] tracking-[-0.02em] leading-[1.3]">
             Ваш ИИ-методист — тесты и планы уроков за 2 минуты
           </p>
-          <p style={{ margin: 0, fontSize: 14, color: "#777", lineHeight: 1.5 }}>
+          <p className="m-0 text-sm text-[#777] leading-[1.5]">
             Выберите инструмент и укажите параметры — ИИ подготовит материал по ФГОС
           </p>
         </div>
@@ -278,10 +224,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Tool cards grid */}
-      <div
-        className="fox-tools-grid"
-        style={{ gap: 14 }}
-      >
+      <div className="fox-tools-grid gap-[14px]">
         {TOOLS.map((tool) => (
           <ToolCard key={tool.id} tool={tool} />
         ))}

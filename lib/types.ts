@@ -55,6 +55,5 @@ export interface QuizResult {
   subject: string;
   grade: number;
   topic: string;
-  format: string;
   questions: Question[];
 }

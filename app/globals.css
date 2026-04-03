@@ -157,6 +157,10 @@ body {
   100% { transform: rotate(180deg) scale(1); }
 }
 
+.hourglass {
+  animation: hourglass 2s ease-in-out infinite;
+}
+
 /* ─── Tool card hover animation ─── */
 .fox-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;

@@ -81,7 +81,7 @@ export default function QuizResultView({ result, generationId, onRegenerate }: P
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <MetaTag text={result.subject} />
           <MetaTag text={`${result.grade} класс`} />
-          <MetaTag text={result.format} />
+          <MetaTag text={result.topic} />
           <MetaTag text={`${result.questions.length} вопр.`} />
         </div>
       </div>
@@ -447,7 +447,6 @@ function buildPlainText(result: QuizResult): string {
     result.title,
     `Предмет: ${result.subject}, ${result.grade} класс`,
     `Тема: ${result.topic}`,
-    `Формат: ${result.format}`,
     "",
     "═".repeat(50),
     "",
